@@ -1,0 +1,47 @@
+{
+    "domino_dqn": {
+        "checkpoints": [
+            {
+                "steps": 0,
+                "file_path": "results\\ultimate\\domino_dqn\\domino_dqn-0.onnx",
+                "reward": null,
+                "creation_time": 1739910479.1606839,
+                "auxillary_file_paths": [
+                    "results\\ultimate\\domino_dqn\\domino_dqn-0.pt"
+                ]
+            },
+            {
+                "steps": 499997,
+                "file_path": "results\\ultimate\\domino_dqn\\domino_dqn-499997.onnx",
+                "reward": -6.653869899618368,
+                "creation_time": 1739982592.6060278,
+                "auxillary_file_paths": [
+                    "results\\ultimate\\domino_dqn\\domino_dqn-499997.pt"
+                ]
+            },
+            {
+                "steps": 500006,
+                "file_path": "results\\ultimate\\domino_dqn\\domino_dqn-500006.onnx",
+                "reward": -6.661823731670055,
+                "creation_time": 1739982592.6360826,
+                "auxillary_file_paths": [
+                    "results\\ultimate\\domino_dqn\\domino_dqn-500006.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 500006,
+            "file_path": "results\\ultimate\\domino_dqn.onnx",
+            "reward": -6.661823731670055,
+            "creation_time": 1739982592.6360826,
+            "auxillary_file_paths": [
+                "results\\ultimate\\domino_dqn\\domino_dqn-500006.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "2.5.1+cpu"
+    }
+}

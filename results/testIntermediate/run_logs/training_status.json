@@ -1,0 +1,65 @@
+{
+    "domino_dqn": {
+        "checkpoints": [
+            {
+                "steps": 1143,
+                "file_path": "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.onnx",
+                "reward": null,
+                "creation_time": 1737845692.847286,
+                "auxillary_file_paths": [
+                    "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.pt"
+                ]
+            },
+            {
+                "steps": 1143,
+                "file_path": "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.onnx",
+                "reward": null,
+                "creation_time": 1737990150.3808112,
+                "auxillary_file_paths": [
+                    "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.pt"
+                ]
+            },
+            {
+                "steps": 1143,
+                "file_path": "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.onnx",
+                "reward": null,
+                "creation_time": 1738075630.1180568,
+                "auxillary_file_paths": [
+                    "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.pt"
+                ]
+            },
+            {
+                "steps": 1143,
+                "file_path": "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.onnx",
+                "reward": null,
+                "creation_time": 1738075683.4032972,
+                "auxillary_file_paths": [
+                    "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.pt"
+                ]
+            },
+            {
+                "steps": 1143,
+                "file_path": "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.onnx",
+                "reward": null,
+                "creation_time": 1738075829.6906168,
+                "auxillary_file_paths": [
+                    "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 1143,
+            "file_path": "results\\testIntermediate\\domino_dqn.onnx",
+            "reward": null,
+            "creation_time": 1738075829.6906168,
+            "auxillary_file_paths": [
+                "results\\testIntermediate\\domino_dqn\\domino_dqn-1143.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "2.5.1+cpu"
+    }
+}

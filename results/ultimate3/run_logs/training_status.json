@@ -1,0 +1,65 @@
+{
+    "domino_dqn": {
+        "checkpoints": [
+            {
+                "steps": 1999994,
+                "file_path": "results\\ultimate3\\domino_dqn\\domino_dqn-1999994.onnx",
+                "reward": 6.141845984092125,
+                "creation_time": 1742258079.7598999,
+                "auxillary_file_paths": [
+                    "results\\ultimate3\\domino_dqn\\domino_dqn-1999994.pt"
+                ]
+            },
+            {
+                "steps": 2499988,
+                "file_path": "results\\ultimate3\\domino_dqn\\domino_dqn-2499988.onnx",
+                "reward": 6.442078624916847,
+                "creation_time": 1742261949.3840404,
+                "auxillary_file_paths": [
+                    "results\\ultimate3\\domino_dqn\\domino_dqn-2499988.pt"
+                ]
+            },
+            {
+                "steps": 2857514,
+                "file_path": "results\\ultimate3\\domino_dqn\\domino_dqn-2857514.onnx",
+                "reward": 5.059459376979518,
+                "creation_time": 1742264460.866514,
+                "auxillary_file_paths": [
+                    "results\\ultimate3\\domino_dqn\\domino_dqn-2857514.pt"
+                ]
+            },
+            {
+                "steps": 2999986,
+                "file_path": "results\\ultimate3\\domino_dqn\\domino_dqn-2999986.onnx",
+                "reward": 6.713844024513279,
+                "creation_time": 1742303776.1164932,
+                "auxillary_file_paths": [
+                    "results\\ultimate3\\domino_dqn\\domino_dqn-2999986.pt"
+                ]
+            },
+            {
+                "steps": 3000011,
+                "file_path": "results\\ultimate3\\domino_dqn\\domino_dqn-3000011.onnx",
+                "reward": 6.721685824707208,
+                "creation_time": 1742303776.13795,
+                "auxillary_file_paths": [
+                    "results\\ultimate3\\domino_dqn\\domino_dqn-3000011.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 3000011,
+            "file_path": "results\\ultimate3\\domino_dqn.onnx",
+            "reward": 6.721685824707208,
+            "creation_time": 1742303776.13795,
+            "auxillary_file_paths": [
+                "results\\ultimate3\\domino_dqn\\domino_dqn-3000011.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "2.5.1+cpu"
+    }
+}

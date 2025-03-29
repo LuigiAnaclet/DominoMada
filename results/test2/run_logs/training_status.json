@@ -1,0 +1,29 @@
+{
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "2.5.1+cpu"
+    },
+    "domino_dqn": {
+        "checkpoints": [
+            {
+                "steps": 0,
+                "file_path": "results\\test2\\domino_dqn\\domino_dqn-0.onnx",
+                "reward": null,
+                "creation_time": 1734441021.6782339,
+                "auxillary_file_paths": [
+                    "results\\test2\\domino_dqn\\domino_dqn-0.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 0,
+            "file_path": "results\\test2\\domino_dqn.onnx",
+            "reward": null,
+            "creation_time": 1734441021.6782339,
+            "auxillary_file_paths": [
+                "results\\test2\\domino_dqn\\domino_dqn-0.pt"
+            ]
+        }
+    }
+}

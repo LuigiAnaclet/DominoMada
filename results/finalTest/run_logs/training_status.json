@@ -1,0 +1,38 @@
+{
+    "domino_dqn": {
+        "checkpoints": [
+            {
+                "steps": 499996,
+                "file_path": "results\\finalTest\\domino_dqn\\domino_dqn-499996.onnx",
+                "reward": 10.306703662295137,
+                "creation_time": 1738773783.337861,
+                "auxillary_file_paths": [
+                    "results\\finalTest\\domino_dqn\\domino_dqn-499996.pt"
+                ]
+            },
+            {
+                "steps": 500015,
+                "file_path": "results\\finalTest\\domino_dqn\\domino_dqn-500015.onnx",
+                "reward": 10.329498826019838,
+                "creation_time": 1738773783.5549753,
+                "auxillary_file_paths": [
+                    "results\\finalTest\\domino_dqn\\domino_dqn-500015.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 500015,
+            "file_path": "results\\finalTest\\domino_dqn.onnx",
+            "reward": 10.329498826019838,
+            "creation_time": 1738773783.5549753,
+            "auxillary_file_paths": [
+                "results\\finalTest\\domino_dqn\\domino_dqn-500015.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "2.5.1+cpu"
+    }
+}

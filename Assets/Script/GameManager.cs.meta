@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0bb369769cd4d0845a2c602ac65a904f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - board: {fileID: 8112226463640254601, guid: 2abc97dada2cbcd43a5da6e67c16ced1, type: 3}
+  - uiManager: {fileID: 3680207118158300836, guid: cab5200344383754f9b6fbb4fcd10519, type: 3}
+  - playButton: {fileID: 3360286821453579981, guid: 8fafa5825700ff74fa5c4afac13555dc, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

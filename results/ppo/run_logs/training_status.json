@@ -1,0 +1,65 @@
+{
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "2.5.1+cpu"
+    },
+    "domino_dqn": {
+        "checkpoints": [
+            {
+                "steps": 0,
+                "file_path": "results\\ppo\\domino_dqn\\domino_dqn-0.onnx",
+                "reward": null,
+                "creation_time": 1734440775.9093616,
+                "auxillary_file_paths": [
+                    "results\\ppo\\domino_dqn\\domino_dqn-0.pt"
+                ]
+            },
+            {
+                "steps": 0,
+                "file_path": "results\\ppo\\domino_dqn\\domino_dqn-0.onnx",
+                "reward": null,
+                "creation_time": 1734440987.2272558,
+                "auxillary_file_paths": [
+                    "results\\ppo\\domino_dqn\\domino_dqn-0.pt"
+                ]
+            },
+            {
+                "steps": 0,
+                "file_path": "results\\ppo\\domino_dqn\\domino_dqn-0.onnx",
+                "reward": null,
+                "creation_time": 1734441112.2786403,
+                "auxillary_file_paths": [
+                    "results\\ppo\\domino_dqn\\domino_dqn-0.pt"
+                ]
+            },
+            {
+                "steps": 0,
+                "file_path": "results\\ppo\\domino_dqn\\domino_dqn-0.onnx",
+                "reward": null,
+                "creation_time": 1734441193.078029,
+                "auxillary_file_paths": [
+                    "results\\ppo\\domino_dqn\\domino_dqn-0.pt"
+                ]
+            },
+            {
+                "steps": 0,
+                "file_path": "results\\ppo\\domino_dqn\\domino_dqn-0.onnx",
+                "reward": null,
+                "creation_time": 1734441641.7205553,
+                "auxillary_file_paths": [
+                    "results\\ppo\\domino_dqn\\domino_dqn-0.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 0,
+            "file_path": "results\\ppo\\domino_dqn.onnx",
+            "reward": null,
+            "creation_time": 1734441641.7205553,
+            "auxillary_file_paths": [
+                "results\\ppo\\domino_dqn\\domino_dqn-0.pt"
+            ]
+        }
+    }
+}

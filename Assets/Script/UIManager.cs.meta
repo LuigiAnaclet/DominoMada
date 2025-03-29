@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: fa2cfdbe5a1daf643824d25b478272d0
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - playerTurnText: {fileID: 1042338979052179422, guid: c4d56f60ab9f1074daf94d566f840bc8, type: 3}
+  - winnerText: {fileID: 6871493205347775966, guid: 8e2c284b83d196746bb0a53d267120e7, type: 3}
+  - scoreText: {fileID: 6871493205347775966, guid: 8e2c284b83d196746bb0a53d267120e7, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

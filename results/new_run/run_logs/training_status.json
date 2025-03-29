@@ -1,0 +1,65 @@
+{
+    "domino_dqn": {
+        "checkpoints": [
+            {
+                "steps": 0,
+                "file_path": "results\\new_run\\domino_dqn\\domino_dqn-0.onnx",
+                "reward": null,
+                "creation_time": 1736358370.1950014,
+                "auxillary_file_paths": [
+                    "results\\new_run\\domino_dqn\\domino_dqn-0.pt"
+                ]
+            },
+            {
+                "steps": 0,
+                "file_path": "results\\new_run\\domino_dqn\\domino_dqn-0.onnx",
+                "reward": null,
+                "creation_time": 1736359133.4822907,
+                "auxillary_file_paths": [
+                    "results\\new_run\\domino_dqn\\domino_dqn-0.pt"
+                ]
+            },
+            {
+                "steps": 0,
+                "file_path": "results\\new_run\\domino_dqn\\domino_dqn-0.onnx",
+                "reward": null,
+                "creation_time": 1736359191.9135928,
+                "auxillary_file_paths": [
+                    "results\\new_run\\domino_dqn\\domino_dqn-0.pt"
+                ]
+            },
+            {
+                "steps": 499972,
+                "file_path": "results\\new_run\\domino_dqn\\domino_dqn-499972.onnx",
+                "reward": 10.678787827010106,
+                "creation_time": 1736364569.3382244,
+                "auxillary_file_paths": [
+                    "results\\new_run\\domino_dqn\\domino_dqn-499972.pt"
+                ]
+            },
+            {
+                "steps": 500009,
+                "file_path": "results\\new_run\\domino_dqn\\domino_dqn-500009.onnx",
+                "reward": 10.672782205045223,
+                "creation_time": 1736364569.3597257,
+                "auxillary_file_paths": [
+                    "results\\new_run\\domino_dqn\\domino_dqn-500009.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 500009,
+            "file_path": "results\\new_run\\domino_dqn.onnx",
+            "reward": 10.672782205045223,
+            "creation_time": 1736364569.3597257,
+            "auxillary_file_paths": [
+                "results\\new_run\\domino_dqn\\domino_dqn-500009.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "2.5.1+cpu"
+    }
+}

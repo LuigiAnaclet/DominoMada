@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8576330914165416804
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2844618052874369316}
+  - component: {fileID: 7861747601242475470}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2844618052874369316
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8576330914165416804}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7861747601242475470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8576330914165416804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bb369769cd4d0845a2c602ac65a904f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  players:
+  - {fileID: 7992729588758246286, guid: 0d7aa1dd06f445248bfcf8dd6c30d523, type: 3}
+  - {fileID: 7987254853100572790, guid: d0c42a1bfb6182c47ba7d023bbdc7ec0, type: 3}
+  - {fileID: -1369366656884835391, guid: 36ea863b94609e148886fcba41c57cc0, type: 3}
+  dominoObjects:
+  - {fileID: -8169272319046981160, guid: 25ead5bf1ebe1e34b8daf442dab83ea0, type: 3}
+  - {fileID: -621837894562697149, guid: 73b20acabbd28b54a8948ed5b97f8fe4, type: 3}
+  - {fileID: -6606249485003196373, guid: c488ee1379194244799a63f51457e4ef, type: 3}
+  - {fileID: -4686873591389193851, guid: 4bf236315fde3594899dbe74dd4bb384, type: 3}
+  - {fileID: 8732675770734754297, guid: 8b68ab88b5da9b345bed13614f5f7fbd, type: 3}
+  - {fileID: 4770510536708738190, guid: f3e4301e005690f45b67a5cd3eed611d, type: 3}
+  - {fileID: 8178486610459119075, guid: 6dfe8a2fc3b72fe4aa6535a8e7df9bc4, type: 3}
+  - {fileID: -8590638172054262563, guid: 4e244ee7732e3d74eabfe5fe398605e7, type: 3}
+  - {fileID: 5724905913284496495, guid: 6c1d68e1223784d478879aa06515309d, type: 3}
+  - {fileID: -8904406970617033697, guid: e13a4a41bfe06d9448607cb5dfecced5, type: 3}
+  - {fileID: -8185259577483037474, guid: 660633ee6f5701f44b955a1a248eb077, type: 3}
+  - {fileID: 4856788710653266905, guid: 8eb1797fa08141c42a2529430f538a83, type: 3}
+  - {fileID: 3030902495123422431, guid: 6f874f267a14673458dc7e4ed906a142, type: 3}
+  - {fileID: -4597353039247892442, guid: e51b593cc37ab854eb8ad5a94a661c03, type: 3}
+  - {fileID: 5639992984068979190, guid: c5aa0ed0ed2d0dd48ad7e89436dccaab, type: 3}
+  - {fileID: -9196402295635637365, guid: 25ef328010031ae4693caf4b6e42bc96, type: 3}
+  - {fileID: 861440962366354911, guid: 5c972f4f9c7af694493ec4acfc326872, type: 3}
+  - {fileID: -6855273357947317280, guid: 415231d27959a1d4d904c86f2f5c96ed, type: 3}
+  - {fileID: -7422440357457256039, guid: 398a840ff6f78394191c93a21a515678, type: 3}
+  - {fileID: 6725121805299372340, guid: 77371f2805a0ada429bf1559b2431869, type: 3}
+  - {fileID: -4420174682765620247, guid: ed0fa6167f6a5f2458e077fb82ae91cd, type: 3}
+  - {fileID: 7408635984581955842, guid: 385147402a15fbe4bb65886aed0fba40, type: 3}
+  - {fileID: -228597962861212163, guid: aaf0818164850164b8d8e45f34711622, type: 3}
+  - {fileID: 5205813135933305168, guid: 26777b371d847d5489eda63d4ab40198, type: 3}
+  - {fileID: 7342869557318852293, guid: dc6a9a67bcadfe0479f3e5dbf9dccdba, type: 3}
+  - {fileID: 4497433037777850607, guid: e40ce1e096439dc44836b3cecd1a3aca, type: 3}
+  - {fileID: -3927050077477385645, guid: ec1ed0288876d9440858787fa25f4fd7, type: 3}
+  - {fileID: 1823230091060883959, guid: 1a2ca5852a8376447a8fab06a9fe72c4, type: 3}
+  board: {fileID: 8112226463640254601, guid: 2abc97dada2cbcd43a5da6e67c16ced1, type: 3}
+  uiManager: {fileID: 3680207118158300836, guid: cab5200344383754f9b6fbb4fcd10519, type: 3}
+  playButton: {fileID: 3360286821453579981, guid: 8fafa5825700ff74fa5c4afac13555dc, type: 3}
+  playedDominos: []
+  currentPlayerIndex: 0

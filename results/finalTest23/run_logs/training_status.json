@@ -1,0 +1,47 @@
+{
+    "domino_dqn": {
+        "checkpoints": [
+            {
+                "steps": 290,
+                "file_path": "results\\finalTest23\\domino_dqn\\domino_dqn-290.onnx",
+                "reward": 10.023809024265834,
+                "creation_time": 1738935418.0840826,
+                "auxillary_file_paths": [
+                    "results\\finalTest23\\domino_dqn\\domino_dqn-290.pt"
+                ]
+            },
+            {
+                "steps": 673,
+                "file_path": "results\\finalTest23\\domino_dqn\\domino_dqn-673.onnx",
+                "reward": 3.0793098663461618,
+                "creation_time": 1738935888.5744693,
+                "auxillary_file_paths": [
+                    "results\\finalTest23\\domino_dqn\\domino_dqn-673.pt"
+                ]
+            },
+            {
+                "steps": 966,
+                "file_path": "results\\finalTest23\\domino_dqn\\domino_dqn-966.onnx",
+                "reward": 5.926086602003678,
+                "creation_time": 1738936086.234902,
+                "auxillary_file_paths": [
+                    "results\\finalTest23\\domino_dqn\\domino_dqn-966.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 966,
+            "file_path": "results\\finalTest23\\domino_dqn.onnx",
+            "reward": 5.926086602003678,
+            "creation_time": 1738936086.234902,
+            "auxillary_file_paths": [
+                "results\\finalTest23\\domino_dqn\\domino_dqn-966.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "2.5.1+cpu"
+    }
+}

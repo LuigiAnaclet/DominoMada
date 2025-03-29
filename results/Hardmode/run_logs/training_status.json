@@ -1,0 +1,65 @@
+{
+    "domino_dqn": {
+        "checkpoints": [
+            {
+                "steps": 24999994,
+                "file_path": "results\\hardmode\\domino_dqn\\domino_dqn-24999994.onnx",
+                "reward": 4.139361685894905,
+                "creation_time": 1740495319.633018,
+                "auxillary_file_paths": [
+                    "results\\hardmode\\domino_dqn\\domino_dqn-24999994.pt"
+                ]
+            },
+            {
+                "steps": 25499992,
+                "file_path": "results\\hardmode\\domino_dqn\\domino_dqn-25499992.onnx",
+                "reward": 5.541752475131418,
+                "creation_time": 1740498320.5544763,
+                "auxillary_file_paths": [
+                    "results\\hardmode\\domino_dqn\\domino_dqn-25499992.pt"
+                ]
+            },
+            {
+                "steps": 25999991,
+                "file_path": "results\\hardmode\\domino_dqn\\domino_dqn-25999991.onnx",
+                "reward": 5.27100742623118,
+                "creation_time": 1740501204.368919,
+                "auxillary_file_paths": [
+                    "results\\hardmode\\domino_dqn\\domino_dqn-25999991.pt"
+                ]
+            },
+            {
+                "steps": 26499987,
+                "file_path": "results\\hardmode\\domino_dqn\\domino_dqn-26499987.onnx",
+                "reward": 6.0004795032153595,
+                "creation_time": 1740504109.5161686,
+                "auxillary_file_paths": [
+                    "results\\hardmode\\domino_dqn\\domino_dqn-26499987.pt"
+                ]
+            },
+            {
+                "steps": 26767761,
+                "file_path": "results\\hardmode\\domino_dqn\\domino_dqn-26767761.onnx",
+                "reward": 6.2366353770282785,
+                "creation_time": 1740505675.6923146,
+                "auxillary_file_paths": [
+                    "results\\hardmode\\domino_dqn\\domino_dqn-26767761.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 26767761,
+            "file_path": "results\\hardmode\\domino_dqn.onnx",
+            "reward": 6.2366353770282785,
+            "creation_time": 1740505675.6923146,
+            "auxillary_file_paths": [
+                "results\\hardmode\\domino_dqn\\domino_dqn-26767761.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "2.5.1+cpu"
+    }
+}
