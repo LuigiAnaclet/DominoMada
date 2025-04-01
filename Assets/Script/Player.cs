@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using Unity.MLAgents.Actuators;
 using UnityEngine;
 using UnityEngine.UI;
 using static GameManager;
 
-public class Player : MonoBehaviour, IPlayable
+public class Player : MonoBehaviourPun, IPlayable
 {
     public string name { get; set; } = "Humain";
     public GameManager gameManager;
@@ -92,6 +93,8 @@ public class Player : MonoBehaviour, IPlayable
     // Affiche les dominos 
     public void DisplayPlayerHand()
     {
+        if (Photon.Pun.PhotonNetwork.IsConnected && !GetComponent<PhotonView>().IsMine)
+            return;
         float spacing = 0.3f; // Espacement horizontal entre les dominos
         float yOffset = -0.8f; // Décalage vertical pour placer les dominos plus bas
 

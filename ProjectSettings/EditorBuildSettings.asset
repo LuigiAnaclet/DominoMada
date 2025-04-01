@@ -9,8 +9,20 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
-    path: Assets/Scenes/Main.unity
+    path: Assets/Scenes/MainMenu.unity
+    guid: eaef3bd1cb088b54b959f46facb25b4d
+  - enabled: 1
+    path: Assets/Scenes/CoopVsIA.unity
     guid: edc4516337e56084f8873922198327e6
+  - enabled: 1
+    path: Assets/Scenes/CreateRoomScene.unity
+    guid: 366db32e44aa151459fd436d9e85a0ab
+  - enabled: 1
+    path: Assets/Scenes/JoinRoomScene.unity
+    guid: d5ff139a9abb9674f847b9ab12140570
+  - enabled: 1
+    path: Assets/Scenes/PVPScene.unity
+    guid: eca8b5cbd5dc6254ba7c8303cb6cc318
   m_configObjects:
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 04fe1e8d32a08334da31fa96251b310d, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 0da66961f882f4f48a06da608053c825, type: 2}

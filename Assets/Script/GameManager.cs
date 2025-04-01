@@ -11,10 +11,11 @@ using System.Collections;
 using System.Linq;
 using UnityEngine.SocialPlatforms;
 using UnityEngine.UIElements;
+using Photon.Pun;
 
 
 
-public class GameManager : MonoBehaviour
+public class GameManager : MonoBehaviourPunCallbacks
 {
 
     public List<IPlayable> players;
@@ -42,35 +43,37 @@ public class GameManager : MonoBehaviour
     private int rightDominoCount = 0;
     private IPlayable localPlayer;
 
+    public static GameManager Instance;
+    private PhotonView photonView;
 
 
+
+    void Awake()
+    {
+        Instance = this;
+        photonView = GetComponent<PhotonView>();
+    }
 
     private void Start()
     {
 
-        //SetupAgents();
-        /*int numPlayers = 0; // Par exemple, un joueur humain
-        int numAI = 3;      // Et deux IA*/
-        //InitializePlayers(numPlayers, numAI);
-
-        if (uiManager == null)
+        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
         {
-            uiManager = FindAnyObjectByType<UIManager>();
-        }
-
-        InitializePlayersFromScene();
-        foreach (var player in players)
-        {
-            if (!playerScores.ContainsKey(player))
+            InitializeNetworkPlayers();
+            if (PhotonNetwork.IsMasterClient)
             {
-                playerScores[player] = 0;
-                playerCochons[player] = 0;
-                cochonsDonnés[player] = new Dictionary<IPlayable, int>();
+                photonView.RPC("RPC_StartTurn", RpcTarget.All, currentPlayerIndex);
             }
+        }
+        else
+        {
+            InitializeLocalPlayers();
         }
 
         InitializeGame();
-        
+
+        //DelayedInitializeGame();
+
         /*playButton.gameObject.SetActive(true);
         playButton.onClick.AddListener(StartGame);*/
     }
@@ -101,8 +104,40 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void InitializeNetworkPlayers()
+    {
+        Debug.Log("Initialisation des joueurs multijoueur");
 
-    private void InitializePlayersFromScene()
+        if (PhotonNetwork.IsConnected)
+        {
+            // Chaque client instancie SON propre joueur
+            if (PhotonNetwork.IsConnectedAndReady && PhotonNetwork.InRoom)
+            {
+                GameObject go = PhotonNetwork.Instantiate("NetworkPlayer", new Vector3(0, 0, 0), Quaternion.identity);
+                Player p = go.GetComponent<Player>();
+                p.gameManager = this;
+                p.name = PhotonNetwork.NickName;
+                players.Add(p);
+
+                localPlayer = p;
+            }
+        }
+
+        // Attendre un peu et vérifier que tous les joueurs sont là avant de lancer la partie
+        StartCoroutine(WaitForAllPlayersReady());
+    }
+
+    private IEnumerator WaitForAllPlayersReady()
+    {
+        yield return new WaitForSeconds(2f);
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            photonView.RPC("RPC_StartTurn", RpcTarget.All, currentPlayerIndex);
+        }
+    }
+
+    private void InitializeLocalPlayers()
     {
         players = new List<IPlayable>();
 
