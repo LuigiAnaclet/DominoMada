@@ -12,6 +12,10 @@ using System.Linq;
 using UnityEngine.SocialPlatforms;
 using UnityEngine.UIElements;
 using Photon.Pun;
+using Photon.Realtime;
+using Unity.VisualScripting;
+using UnityEngine.Playables;
+using Photon.Pun.Demo.PunBasics;
 
 
 
@@ -27,63 +31,81 @@ public class GameManager : MonoBehaviourPunCallbacks
     public enum PlaySide { None, Left, Right, Both }
 
     public List<Domino> playedDominos = new List<Domino>();
+    public List<(int sideA, int sideB)> playedDominosData = new List<(int sideA, int sideB)>();
+
     public int currentPlayerIndex = 0;
     private int passes = 0;
     public GameObject leftClickZone;  // Assigner dans l'Inspector
     public GameObject rightClickZone;
     public int selectedDominoIndex = -1;
-    private Dictionary<IPlayable, int> playerScores = new Dictionary<IPlayable, int>();
-    private Dictionary<IPlayable, int> playerCochons = new Dictionary<IPlayable, int>();
-    private Dictionary<IPlayable, Dictionary<IPlayable, int>> cochonsDonnés = new Dictionary<IPlayable, Dictionary<IPlayable, int>>();
+    public Dictionary<IPlayable, int> playerScores = new Dictionary<IPlayable, int>();
+    public Dictionary<IPlayable, int> playerCochons = new Dictionary<IPlayable, int>();
+    public Dictionary<IPlayable, Dictionary<IPlayable, int>> cochonsDonnés = new Dictionary<IPlayable, Dictionary<IPlayable, int>>();
     private IPlayable lastWinner = null; // Stocke le dernier gagnant
     private List<IPlayable> lastBallePlayers = new List<IPlayable>(); // Stocke si il y a eu balle
     private int startingPlayerIndex = -1;
     private const int MaxHorizontalDominosPerSide = 8;
     private int leftDominoCount = 0;
     private int rightDominoCount = 0;
-    private IPlayable localPlayer;
+    public IPlayable localPlayer;
+    public bool firstDoublePlayed = false;
 
     public static GameManager Instance;
-    private PhotonView photonView;
-
-
 
     void Awake()
     {
-        Instance = this;
-        photonView = GetComponent<PhotonView>();
+        Instance = this; // important !
+        if (players == null)
+            players = new List<IPlayable>();
     }
 
-    private void Start()
+
+    void Start()
     {
+        foreach (var domino in dominoObjects)
+        {
+            domino.transform.position = new Vector3(0, 0.55f, 0);
+            domino.transform.rotation = Quaternion.identity;
+            domino.gameObject.SetActive(false);
+        }
 
         if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
         {
-            InitializeNetworkPlayers();
-            if (PhotonNetwork.IsMasterClient)
-            {
-                photonView.RPC("RPC_StartTurn", RpcTarget.All, currentPlayerIndex);
-            }
+            MultiplayerManager.Instance.RegisterGameManager(this);
         }
         else
         {
             InitializeLocalPlayers();
         }
-
-        InitializeGame();
-
-        //DelayedInitializeGame();
-
-        /*playButton.gameObject.SetActive(true);
-        playButton.onClick.AddListener(StartGame);*/
     }
 
-    private void StartGame()
+    IEnumerator StartGame()
     {
-        //playButton.gameObject.SetActive(false);
-        //uiManager.HideScores();
-        //InitializeGame();
+        yield return new WaitForSeconds(1f);
+        if (uiManager != null)
+        {
+            uiManager.UpdateScoresDisplay(players, playerScores, playerCochons, cochonsDonnés);
+        }
+
+        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
+        {
+            /*Debug.Log($"Chargement du multi");
+            MultiplayerManager.Instance.RegisterGameManager(this);*/
+        }
+        else
+        {
+            InitializeGameSolo();
+        }
+        
     }
+
+    public void RegisterPlayerInDictionaries(IPlayable p)
+    {
+        if (!playerScores.ContainsKey(p)) playerScores[p] = 0;
+        if (!playerCochons.ContainsKey(p)) playerCochons[p] = 0;
+        if (!cochonsDonnés.ContainsKey(p)) cochonsDonnés[p] = new Dictionary<IPlayable, int>();
+    }
+
     private void ConfigureBehavior(DQNAgent aiAgent)
     {
         var behaviorParams = aiAgent.GetComponent<BehaviorParameters>();
@@ -104,39 +126,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    void InitializeNetworkPlayers()
-    {
-        Debug.Log("Initialisation des joueurs multijoueur");
-
-        if (PhotonNetwork.IsConnected)
-        {
-            // Chaque client instancie SON propre joueur
-            if (PhotonNetwork.IsConnectedAndReady && PhotonNetwork.InRoom)
-            {
-                GameObject go = PhotonNetwork.Instantiate("NetworkPlayer", new Vector3(0, 0, 0), Quaternion.identity);
-                Player p = go.GetComponent<Player>();
-                p.gameManager = this;
-                p.name = PhotonNetwork.NickName;
-                players.Add(p);
-
-                localPlayer = p;
-            }
-        }
-
-        // Attendre un peu et vérifier que tous les joueurs sont là avant de lancer la partie
-        StartCoroutine(WaitForAllPlayersReady());
-    }
-
-    private IEnumerator WaitForAllPlayersReady()
-    {
-        yield return new WaitForSeconds(2f);
-
-        if (PhotonNetwork.IsMasterClient)
-        {
-            photonView.RPC("RPC_StartTurn", RpcTarget.All, currentPlayerIndex);
-        }
-    }
-
     private void InitializeLocalPlayers()
     {
         players = new List<IPlayable>();
@@ -147,6 +136,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             humanPlayer.gameManager = this;
             players.Add(humanPlayer);
+            RegisterPlayerInDictionaries(humanPlayer);
         }
         localPlayer = humanPlayer;
 
@@ -160,26 +150,30 @@ public class GameManager : MonoBehaviourPunCallbacks
             agent.SetHand(new List<Domino>());
             agent.name = $"IA_{i}";
             players.Add(agent);
+            RegisterPlayerInDictionaries(agent);
             i++;
         }
-
+        StartCoroutine(StartGame());
         //Debug.Log($"Nombre d'agents IA trouvés : {aiAgents.Length}");
     }
-
-    public void InitializeGame()
+    public void InitializeGameSolo()
     {
         leftDominoCount = 0;
         rightDominoCount = 0;
-        Debug.Log("🆕 [InitializeGame] Nouvelle partie en cours...");
+
+        Debug.Log("🆕 [InitializeGameSolo] Nouvelle partie en cours...");
         DisplayScoresAndCochons();
         DisplayCochonsHistory();
+
         if (uiManager != null)
         {
             uiManager.UpdateScoresDisplay(players, playerScores, playerCochons, cochonsDonnés);
         }
+
         dominoObjects.Shuffle();
         int startIndex = 0;
         int dominosPerPlayer = 7;
+
         foreach (IPlayable player in players)
         {
             if (player != null)
@@ -188,22 +182,176 @@ public class GameManager : MonoBehaviourPunCallbacks
                 SyncAgentHand(player);
                 startIndex += dominosPerPlayer;
 
-                // Met à jour l'affichage pour le joueur humain
                 if (player is Player humanPlayer)
                 {
                     humanPlayer.DisplayPlayerHand();
-                    //Debug.Log("Au tour du joueur humain.");
                     humanPlayer.SetDominosInteractable(false);
                 }
             }
         }
+
+        StartCoroutine(DelayedContinueAfterDistribution());
+    }
+    private IEnumerator DelayedContinueAfterDistribution()
+    {
+        yield return new WaitForSeconds(1f);
+        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
+        {
+            ContinueAfterDistributionMultiplayer();
+        }
+        else
+        {
+            ContinueAfterDistributionSolo();
+        }
+    }
+
+    public void InitializeGameMultiplayer()
+    {
+        leftDominoCount = 0;
+        rightDominoCount = 0;
+
+        Debug.Log("[InitializeGameMultiplayer] Nouvelle partie en cours...");
+        DisplayScoresAndCochons();
+        DisplayCochonsHistory(); 
+        StartCoroutine(DelayedMultiplayerDistribution());
+        if (uiManager != null)
+        {
+            MultiplayerManager.Instance.photonView.RPC("RPC_UpdateUI", RpcTarget.All);
+        }
+
+        /*if(PhotonNetwork.IsMasterClient && playedDominos.Count == 0)
+        {
+            StartCoroutine(DelayedContinueAfterDistribution());
+        }*/
+    }
+
+    private IEnumerator DelayedMultiplayerDistribution()
+    {
+        yield return new WaitForEndOfFrame(); // ⏳ Attend une frame pour laisser les logs et le système se stabiliser
+
+        Debug.Log("🧩 [Multiplayer] Distribution des mains multijoueur");
+        DistributeDominosMultiplayer();
+ 
+    }
+
+    public void DistributeDominosMultiplayer()
+    {
+
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("[Client] En attente de la distribution du MasterClient...");
+            return;
+        }
+        players = players
+        .OrderBy(p =>
+        {
+            if (p is Player pl && pl.photonView != null && pl.photonView.Owner != null)
+                return pl.photonView.Owner.ActorNumber;
+            return int.MaxValue;
+        }).ToList();
+        List<int> order = Enumerable.Range(0, dominoObjects.Count).ToList();
+        order.Shuffle(); // utilise ton extension Shuffle
+        Debug.Log("[Multiplayer] Distribution des mains multijoueur");
+        MultiplayerManager.Instance.photonView.RPC("RPC_ApplyDominoOrder", RpcTarget.All, order.ToArray());
+
+        int dominosPerPlayer = 7;
+        int startIndex = 0;
+        int[][] hands = new int[players.Count][];
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            hands[i] = new int[dominosPerPlayer];
+            for (int j = 0; j < dominosPerPlayer; j++)
+            {
+                hands[i][j] = startIndex;
+                startIndex++;
+            }
+        }
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            IPlayable p = players[i];
+            if (p is Player player)
+            {
+                PhotonView pv = player.GetComponent<PhotonView>();
+                if (pv == null)
+                {
+                    Debug.LogWarning($"❌ {player.name} n’a pas de PhotonView !");
+                    continue;
+                }
+
+               //Debug.Log($"PhotonView trouvé pour {player.name} - ViewID: {pv.ViewID}, Owner: {pv.Owner}, IsMine: {pv.IsMine}");
+
+                if (pv.Owner == null)
+                {
+                    Debug.LogWarning($"❌ Le PhotonView de {player.name} n’a pas d’Owner !");
+                    continue;
+                }
+
+                //Debug.Log($"Envoi de la main à {player.name} (Owner: {pv.Owner.NickName}, ActorNumber: {pv.Owner.ActorNumber}) => [{string.Join(", ", hands[i])}]");
+                MultiplayerManager.Instance.photonView.RPC("RPC_SetPlayerHand", RpcTarget.AllBuffered, hands[i], pv.Owner.ActorNumber);
+            }
+            else
+            {
+                Debug.Log($"{p.name} n’est pas un Player Unity (type: {p.GetType().Name}), donc pas de main à distribuer.");
+            }
+        }
+
+        //MultiplayerManager.Instance.photonView.RPC("RPC_StartAfterDistribution", RpcTarget.All);
+    }
+
+    
+    public void ContinueAfterDistributionMultiplayer()
+    {
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("[Client] !IsMasterClient, En attente de la synchronisation du joueur courant...");
+            return;
+        }
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("[MasterClient] Initialisation du tour...");
+
+            GetStartingPlayerIndex();
+            IPlayable currentPlayer = players[currentPlayerIndex];
+            // Appel du RPC via MultiplayerManager
+            //Debug.Log($"[ContinueAfterDistributionMultiplayer] Setting index");
+            
+
+
+            if (lastWinner != null && players.Contains(lastWinner))
+            {
+                currentPlayerIndex = startingPlayerIndex;
+                MultiplayerManager.Instance.photonView.RPC("RPC_SetCurrentPlayerIndex", RpcTarget.All, currentPlayerIndex);
+                Debug.Log("🎯 [MasterClient] Tour libre pour le dernier gagnant.");
+                if (currentPlayer is Player player && player.photonView.IsMine)
+                {
+                    player.SetDominosInteractable(true);
+                    player.StartTurnTimer(15f);
+                }
+                return;
+            }
+            // ✅ Synchroniser le premier joueur (celui qui joue après le double)
+            //currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
+            //MultiplayerManager.Instance.photonView.RPC("RPC_SetCurrentPlayerIndex", RpcTarget.All, currentPlayerIndex);
+
+            NextTurn();
+
+        }
+        else
+        {
+            Debug.Log("[Client] Else, En attente de la synchronisation du joueur courant...");
+        }
+    }
+
+
+    public void ContinueAfterDistributionSolo()
+    {
         GetStartingPlayerIndex();
         currentPlayerIndex = startingPlayerIndex;
         IPlayable currentPlayer = players[currentPlayerIndex];
-        //Debug.Log($"🎯 [InitializeGame] Le premier joueur est {currentPlayer.name}");
-        //Debug.Log($"📌 Nombre total de joueurs : {players.Count}, currentPlayerIndex = {currentPlayerIndex}");
 
-        // Si le dernier gagnant commence sans contrainte, ne rien faire ici
         if (lastWinner != null && players.Contains(lastWinner))
         {
             currentPlayer = players[currentPlayerIndex];
@@ -215,17 +363,16 @@ public class GameManager : MonoBehaviourPunCallbacks
             {
                 StartCoroutine(WaitAndRequestDecision(aiAgent));
             }
-            else if (currentPlayer is Player player)
+            else if (currentPlayer is Player player && player != null)
             {
                 player.SetDominosInteractable(true);
                 player.StartTurnTimer(15f);
             }
 
-            return; // 🔁 Surtout ne pas appeler NextTurn après !
+            return;
         }
         else
         {
-            // Sinon, on applique la logique classique (plus grand double)
             if (playedDominos.Count == 0)
             {
                 currentPlayerIndex = (currentPlayerIndex - 1 + players.Count) % players.Count;
@@ -241,7 +388,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         NextTurn();
     }
 
-
     private void InitializePlayerHand(IPlayable playable, int startIndex, int dominosPerPlayer)
     {
         List<Domino> hand = new List<Domino>(); // Crée une nouvelle liste pour chaque joueur
@@ -254,7 +400,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
 
         playable.SetHand(hand); // Utilise une méthode SetHand pour définir la main
-        //Debug.Log($"Main initialisée pour {playable.name}: {string.Join(", ", hand)}");
+        Debug.Log($"Main initialisée pour {playable.name}: {string.Join(", ", hand)}");
     }
 
     private void GetStartingPlayerIndex()
@@ -279,6 +425,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
         else
         {
+            //Debug.Log($"Le plus grand double sera joué");
             PlayHighestDouble(players);
         }
          
@@ -286,9 +433,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
     private void PlayHighestDouble(List<IPlayable> candidates)
     {
+        //Debug.Log($"PlayHighestDouble appelé");
         Domino highestDouble = null;
         //int startingPlayerIndex = -1;
-
         // 🔍 Recherche du plus grand double parmi les joueurs donnés
         for (int i = 0; i < candidates.Count; i++)
         {
@@ -310,31 +457,66 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             IPlayable startingPlayer = players[startingPlayerIndex];
 
-            Debug.Log($"🔥 {startingPlayer.name} commence avec [{highestDouble.sides[0]}|{highestDouble.sides[1]}] !");
+            if (uiManager != null)
+            {
+                uiManager.DisplayPlayerTurn("");
+                uiManager.EventMessage($"{startingPlayer.name} commence avec [{highestDouble.sides[0]}|{highestDouble.sides[1]}] !");
+            }
 
-            // 🛠 Retirer le domino de la main du joueur
-            startingPlayer.RemoveDominoFromHand(highestDouble);
-            SyncAgentHand(startingPlayer);
+            
 
-            // 📌 Activer et placer le domino sur le plateau
-            highestDouble.gameObject.SetActive(true);
-            PlaceDomino(highestDouble, true);
+            // ✅ Ne PAS jouer localement, simplement envoyer le RPC à TOUS
+            if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom && PhotonNetwork.CurrentRoom.PlayerCount > 1)
+            {
+                //Debug.Log($"Multiplayer - sending first domino [{highestDouble.sides[0]}|{highestDouble.sides[1]}] to all clients");
+                MultiplayerManager.Instance.SendDominoPlayByData(highestDouble.sides[0], highestDouble.sides[1], true);
+                
+                MultiplayerManager.Instance.photonView.RPC("RPC_EventMessage",RpcTarget.All,$"{startingPlayer.name} commence avec [{highestDouble.sides[0]}|{highestDouble.sides[1]}] !");
+                MultiplayerManager.Instance.photonView.RPC("RPC_UpdateUI", RpcTarget.All);
+            }
+            else
+            {
+                // Mode solo uniquement ➔ on applique localement
+                startingPlayer.RemoveDominoFromHand(highestDouble);
+                SyncAgentHand(startingPlayer);
+                highestDouble.gameObject.SetActive(true);
+                highestDouble.transform.SetParent(null);
+                //Debug.Log($"[DEBUG SOLO] Domino [{highestDouble.sides[0]}|{highestDouble.sides[1]}] : ID={highestDouble.GetInstanceID()}, transform.position = {highestDouble.transform.position}");
+                PlaceDomino(highestDouble, true);
+            }
+            firstDoublePlayed = true;
 
-            // ✅ Mettre à jour le premier joueur actuel
             currentPlayerIndex = startingPlayerIndex;
-
             return;
-            //return startingPlayerIndex;
         }
+
         // 🚨 Aucun double trouvé → Rebrassage et retour `-1`
         Debug.LogWarning("⚠ Aucun double trouvé. Les dominos sont rebattus et la partie recommence.");
         RestartGame();
         //return 0; // Indicateur que la partie a été relancée
     }
 
+
     public void NextTurn()
     {
+        // 🔁 Multijoueur : uniquement le MasterClient peut gérer les tours
+        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom && !PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log("[Client] J’attends le MasterClient pour le tour suivant...");
+            return;
+        }
+
+        // 🔁 UI pour tous
+        if (uiManager != null)
+            uiManager.UpdateIADominoCounts(players, localPlayer);
+
         uiManager.UpdateIADominoCounts(players, localPlayer);
+
+        if (PhotonNetwork.IsConnected && MultiplayerManager.Instance != null)
+        {
+            MultiplayerManager.Instance.photonView.RPC("RPC_UpdateUI", RpcTarget.All);
+        }
+
         if (CheckIfGameEnded())
         {
             Debug.Log("La partie est terminée !");
@@ -346,31 +528,38 @@ public class GameManager : MonoBehaviourPunCallbacks
             previousPlayer.SetDominosInteractable(false);
 
         }
+        
         //Debug.Log($"Nombre de dominos restants : {GetTotalDominosRemaining()}");
 
         currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
         IPlayable currentPlayer = players[currentPlayerIndex];
-
         Debug.Log($"C'est au tour du joueur {currentPlayerIndex + 1} : {currentPlayer.name}");
-        
-
         if (currentPlayer != null)
         {
             SyncAgentHand(currentPlayer);
             if (HasValidPlay(players[currentPlayerIndex]))
             {
-                uiManager.DisplayPlayerTurn(currentPlayer.name+" joue ");
-                if (currentPlayer is DQNAgent aiAgent)
+                //uiManager.DisplayPlayerTurn(currentPlayer.name+" joue ");
+                // 🧠 Multijoueur : synchronise pour tous les clients
+                if (PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient)
                 {
-                    StartCoroutine(WaitAndRequestDecision(aiAgent));
+                    //Debug.Log($"Setting player index");
+                    MultiplayerManager.Instance.photonView.RPC("RPC_SetCurrentPlayerIndex", RpcTarget.All, currentPlayerIndex);
                 }
-                if (currentPlayer is Player player)
+                // 🧠 Solo : active localement
+                else
                 {
-                    player.SetDominosInteractable(true);
-                    player.StartTurnTimer(15f); // ⏱ démarrer le compte à rebours
-                    //PositionClickZonesAtEnds();
+                    uiManager.DisplayPlayerTurn(currentPlayer.name + " joue ");
+                    if (currentPlayer is Player player)
+                    {
+                        player.SetDominosInteractable(true);
+                        player.StartTurnTimer(15f);
+                    }
+                    else if (currentPlayer is DQNAgent aiAgent)
+                    {
+                        StartCoroutine(WaitAndRequestDecision(aiAgent));
+                    }
                 }
-                passes = 0;
             }
             else
             {
@@ -386,23 +575,36 @@ public class GameManager : MonoBehaviourPunCallbacks
                     uiManager.DisplayPlayerTurn("");
                     uiManager.EventMessage($"{currentPlayer.name} est boudé...");
                 }
-
+                if (PhotonNetwork.IsConnected && MultiplayerManager.Instance != null)
+                {
+                    MultiplayerManager.Instance.photonView.RPC("RPC_EventMessage", RpcTarget.All, $"{currentPlayer.name} est boudé...");
+                }
                 StartCoroutine(DelayBeforeNextTurn(3f));
             }
+            if (PhotonNetwork.IsConnected && MultiplayerManager.Instance != null)
+            {
+                MultiplayerManager.Instance.photonView.RPC("RPC_UpdateUI", RpcTarget.All);
+            }
+            
         }
     }
 
     private IEnumerator DelayBeforeNextTurn(float delay)
     {
         yield return new WaitForSeconds(delay);
-        NextTurn();
+        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom && PhotonNetwork.CurrentRoom.PlayerCount > 1)
+        { MultiplayerManager.Instance.RequestNextTurn(); }
+        else
+        {
+            NextTurn();
+        }
+        
     }
 
-
-
+    //un temps pour que l'IA puisse jouer
     private IEnumerator WaitAndRequestDecision(DQNAgent aiAgent)
     {
-        //Debug.Log($"⏳ Attente avant décision de {aiAgent.name}...");
+        Debug.Log($"⏳ Attente avant décision de {aiAgent.name}...");
         yield return new WaitForSeconds(2f); // Pause avant que l'IA joue
 
         if (!this.enabled) // Vérifie si GameManager est désactivé
@@ -454,11 +656,18 @@ public bool IsValidPlay(Domino domino)
                 domino.sides[0] == rightEndValue || domino.sides[1] == rightEndValue);
     }
 
+    public void DebugDominoState()
+    {
+        Debug.Log($"[DEBUG] playedDominos.Count = {playedDominos.Count}, playedDominosData.Count = {playedDominosData.Count}");
+    }
+
 
     public PlaySide GetValidPlaySides(Domino domino)
     {
         int leftEndValue = GetLeftEndValue();
         int rightEndValue = GetRightEndValue();
+
+        Debug.Log($"[GetValidPlaySides] leftEndValue = {leftEndValue}, rightEndValue = {rightEndValue}");
 
         bool canPlayLeft = domino.sides[0] == leftEndValue || domino.sides[1] == leftEndValue;
         bool canPlayRight = domino.sides[0] == rightEndValue || domino.sides[1] == rightEndValue;
@@ -496,10 +705,17 @@ public bool IsValidPlay(Domino domino)
         }
 
         // Place le domino sur le plateau
-        domino.transform.SetParent(board, true);
+        domino.transform.SetParent(null);
         domino.gameObject.SetActive(true);
-        
-        PlaceDomino(domino, playRight);
+
+        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
+        {
+            MultiplayerManager.Instance.SendDominoPlayByData(domino.sides[0],domino.sides[1], playRight);
+        }
+        else
+        {
+            PlaceDomino(domino, playRight);
+        }
 
         // Retire le domino de la main
         player.RemoveDominoFromHand(domino);
@@ -509,7 +725,17 @@ public bool IsValidPlay(Domino domino)
             if (humanPlayer.playTimerCoroutine != null)
                 humanPlayer.StopCoroutine(humanPlayer.playTimerCoroutine);
         }
-        NextTurn();
+        if (PhotonNetwork.InRoom && PhotonNetwork.CurrentRoom.PlayerCount > 1)
+        {
+            return;
+        }
+        else
+        {
+            // 🎮 Mode solo ou local : continue normalement
+            NextTurn();
+        }
+
+
     }
 
 
@@ -620,15 +846,19 @@ public bool IsValidPlay(Domino domino)
 
     public void PlaceDomino(Domino domino, bool playRight)
     {
-        domino.transform.SetParent(null);
-        Vector3 position = new Vector3(0, 0.55f, 0); ;
+        /*if (domino.transform.root != null && domino.transform.root != domino.transform)
+        {
+            domino.transform.SetParent(null);
+        }*/
+
+        Vector3 boardOrigin = board != null ? board.position : Vector3.zero;
+        Vector3 position = new Vector3(0, 0.55f, 0);
         Quaternion rotation = Quaternion.Euler(0, 0, 90); // Couché sur le dos
-
         domino.transform.localScale = new Vector3(0.3f, 1.5f, 0.75f);
-
 
         if (playedDominos.Count == 0)
         {
+            //playedDominos.Add(domino);
             if (domino.sides[0] == domino.sides[1])
             {
                 rotation = Quaternion.Euler(0, 90, 90);
@@ -638,7 +868,7 @@ public bool IsValidPlay(Domino domino)
                 // Premier domino à être placé
                 rotation = Quaternion.Euler(0, 0, 90);
             }
-            
+            domino.transform.position = boardOrigin + position;
         }
         else
         {
@@ -669,7 +899,7 @@ public bool IsValidPlay(Domino domino)
                                 position = lastDomino.transform.position + new Vector3(0.35f, 0, 1.15f);
                             }
                             rotation = Quaternion.Euler(0, -90, 90);
-                            
+
                         }
                         else if (rightDominoCount > MaxHorizontalDominosPerSide)
                         {
@@ -691,7 +921,7 @@ public bool IsValidPlay(Domino domino)
                         domino.Reverse(); // Inverser le domino si nécessaire pour correspondre au chiffre à droite
                     }
                 }
-               else
+                else
                 {
                     if (lastDomino.sides[0] == lastDomino.sides[1])
                     {
@@ -796,10 +1026,11 @@ public bool IsValidPlay(Domino domino)
                 playedDominos.Insert(0, domino);
                 leftDominoCount++;
             }
+            domino.transform.position = position;
         }
 
         // Définir la position et la rotation du domino
-        domino.transform.position = position;
+        //domino.transform.position = position;
         domino.transform.rotation = rotation;
 
         // Ajouter le domino à la liste des dominos joués si placé à droite
@@ -945,14 +1176,14 @@ public bool IsValidPlay(Domino domino)
         Debug.Log($"🔄 [RestartGame] Nombre de joueurs après reset : {players.Count}");
 
         // 🔥 Ajoute un léger délai pour éviter des conflits d'initialisation
-        StartCoroutine(DelayedInitializeGame());
+        StartCoroutine(StartGame());
     }
 
-    private IEnumerator DelayedInitializeGame()
+    /*private IEnumerator DelayedInitializeGame()
     {
         yield return new WaitForSeconds(5f); // 🔥 Petit délai pour afficher qui à gagné
-        InitializeGame();
-    }
+        StartGame();
+    }*/
 
     // Appelée à la fin de chaque partie pour enregistrer les victoires
     public void OnPlayerWin(IPlayable winner)
@@ -1040,7 +1271,7 @@ public bool IsValidPlay(Domino domino)
 
     public void DisplayScoresAndCochons()
     {
-        Debug.Log("📊 Statistiques des joueurs :");
+        Debug.Log("Statistiques des joueurs :");
 
         foreach (var player in players)
         {
@@ -1063,7 +1294,7 @@ public bool IsValidPlay(Domino domino)
 
     public void DisplayCochonsHistory()
     {
-        Debug.Log("\n📌 **Historique des Cochons donnés** 📌");
+        Debug.Log("\n**Historique des Cochons donnés**");
         foreach (var donneur in cochonsDonnés)
         {
             foreach (var receveur in donneur.Value)

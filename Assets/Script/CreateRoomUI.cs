@@ -21,17 +21,13 @@ public class CreateRoomUI : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        if (!PhotonNetwork.IsConnected)
+        PhotonNetwork.AutomaticallySyncScene = true;
         {
-            PhotonNetwork.ConnectUsingSettings();
-            Debug.Log("🔌 Connexion à Photon en cours...");
+            if (PhotonNetwork.IsConnectedAndReady)
+            {
+                PhotonNetwork.JoinLobby();
+            }
         }
-    }
-
-    public override void OnConnectedToMaster()
-    {
-        Debug.Log("✅ Connecté au Master Server !");
-        PhotonNetwork.JoinLobby();
     }
 
     public override void OnJoinedLobby()
@@ -77,7 +73,6 @@ public class CreateRoomUI : MonoBehaviourPunCallbacks
 
     public override void OnLeftRoom()
     {
-        Debug.Log("Leave room button clicked");
         UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
     }
 

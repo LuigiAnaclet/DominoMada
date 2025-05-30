@@ -5,8 +5,9 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - playerTurnText: {fileID: 1042338979052179422, guid: c4d56f60ab9f1074daf94d566f840bc8, type: 3}
-  - winnerText: {fileID: 6871493205347775966, guid: 8e2c284b83d196746bb0a53d267120e7, type: 3}
+  - winnerText: {fileID: 7681618743426452883, guid: a05b32c260491324fb3b0ab986ba52fb, type: 3}
   - scoreText: {fileID: 6871493205347775966, guid: 8e2c284b83d196746bb0a53d267120e7, type: 3}
+  - eventMessage: {fileID: 3933676421241030517, guid: 96ae3e4df38661349ae459e79300bf5a, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

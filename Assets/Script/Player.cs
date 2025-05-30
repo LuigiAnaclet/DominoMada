@@ -8,7 +8,7 @@ using static GameManager;
 
 public class Player : MonoBehaviourPun, IPlayable
 {
-    public string name { get; set; } = "Humain";
+    public string name { get; set; } = "";
     public GameManager gameManager;
     public List<Domino> hand = new List<Domino>();
     public bool isAI { get; set; } = false;
@@ -17,6 +17,7 @@ public class Player : MonoBehaviourPun, IPlayable
     public Coroutine playTimerCoroutine;
     public bool hasPlayed = false;
     public UIManager uiManager;
+    public string playerDisplayName = "";
 
     //public Transform playerHandPanel;     // Panel où les dominos seront affichés
 
@@ -32,6 +33,19 @@ public class Player : MonoBehaviourPun, IPlayable
         hand = newHand;
         DisplayPlayerHand(); // Appel pour afficher la main après l'assignation
     }
+
+    [PunRPC]
+    public void SetPlayerDisplayName(string nickname)
+    {
+        playerDisplayName = nickname;
+        name = nickname; // optionnel, pour debug
+    }
+
+    public override string ToString()
+    {
+        return playerDisplayName != "" ? playerDisplayName : "Inconnu";
+    }
+
 
     // Implémentation de RemoveDominoFromHand
     public void RemoveDominoFromHand(Domino domino)
@@ -53,6 +67,8 @@ public class Player : MonoBehaviourPun, IPlayable
 
     public IEnumerator PlayTimer(float duration)
     {
+        if (GameManager.Instance.players[GameManager.Instance.currentPlayerIndex] != this)
+            yield break;
         yield return new WaitForSeconds(duration);
 
         if (!hasPlayed)
@@ -83,8 +99,15 @@ public class Player : MonoBehaviourPun, IPlayable
             }
             else
             {
-                Debug.Log("Aucun domino jouable, le joueur passe son tour.");
-                gameManager.NextTurn();
+                if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
+                {
+                    MultiplayerManager.Instance.RequestNextTurn();
+                }
+                else
+                {
+                    gameManager.NextTurn();
+                }
+
             }
         }
     }
@@ -103,6 +126,10 @@ public class Player : MonoBehaviourPun, IPlayable
 
         for (int i = 0; i < hand.Count; i++)
         {
+            // 🔒 Sécurité : NE PAS afficher un domino déjà placé sur le plateau
+            if (GameManager.Instance.playedDominos.Contains(hand[i]))
+                continue;
+
             // Instancie le domino 3D
             GameObject dominoInstance = hand[i].gameObject;
 
@@ -138,6 +165,7 @@ public class Player : MonoBehaviourPun, IPlayable
 
     public void SetDominosInteractable(bool interactable)
     {
+        //Debug.Log($"🎮 [{playerDisplayName}] interactable = {interactable}");
         foreach (Domino domino in hand)
         {
             if (domino != null)
@@ -168,13 +196,15 @@ public class Player : MonoBehaviourPun, IPlayable
     // Méthode appelée lorsque le joueur clique sur un domino
     public void OnDominoSelected(GameObject dominoObj)
     {
+        gameManager.DebugDominoState();
+        Debug.Log($"[PLAYER] playedDominos.Count = {GameManager.Instance.playedDominos.Count}");
 
         Domino selectedDomino = dominoObj.GetComponent<Domino>();
-
+        Debug.Log($"Domino cliqué : {dominoObj}");
         if (selectedDomino != null)
         {
             // ✅ Cas spécial : premier tour, aucune contrainte
-            if (gameManager.playedDominos.Count == 0)
+            if (GameManager.Instance.playedDominos.Count == 0 && GameManager.Instance.firstDoublePlayed)
             {
                 Debug.Log("🟢 Premier tour : le joueur peut jouer n'importe quel domino.");
                 // Sauvegarde l'index du domino sélectionné
@@ -213,5 +243,4 @@ public class Player : MonoBehaviourPun, IPlayable
             }
         }
     }
-
 }

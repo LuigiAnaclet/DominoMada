@@ -19,7 +19,7 @@ public class JoinRoomUI : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("PVPScene");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("CreateRoomScene");
     }
 
     public override void OnJoinRoomFailed(short returnCode, string message)

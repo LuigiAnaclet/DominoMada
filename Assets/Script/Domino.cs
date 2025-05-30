@@ -4,33 +4,8 @@ using UnityEngine.SocialPlatforms;
 public class Domino : MonoBehaviour
 {
     public int[] sides = new int[2]; // Représente les côtés du domino (par exemple, [3, 5])
-    public int[] originalSides = new int[2]; // Garde une copie des valeurs originales
+    public int[] originalSides = new int[2]; // Garde une copie des valeurs originales.
 
-    /*void Awake()
-    {
-        Debug.Log($"Awake - Avant copie : Domino [{sides[0]}|{sides[1]}]");
-
-        if (sides[0] != 0 || sides[1] != 0) // On enregistre seulement si sides est défini
-        {
-            originalSides = (int[])sides.Clone();
-        }
-
-        Debug.Log($"Awake - Après copie : Original [{originalSides[0]}|{originalSides[1]}]");
-    }
-
-
-    void Start()
-    {
-        Debug.Log($"Start - Sides : [{sides[0]}|{sides[1]}], Original : [{originalSides[0]}|{originalSides[1]}]");
-
-        if (originalSides[0] == 0 && originalSides[1] == 0 && (sides[0] != 0 || sides[1] != 0))
-        {
-            Debug.LogError("⚠ Correction forcée : originalSides était [0,0], on le met à jour !");
-            originalSides = (int[])sides.Clone();
-        }
-
-        Debug.Log($"Start - Après correction : Original [{originalSides[0]}|{originalSides[1]}]");
-    }*/
 
     // Initialise les côtés du domino
     public void Initialize(int side1, int side2)

@@ -40,6 +40,32 @@ MonoBehaviour:
   - Fire
   - RespawnSpaceship
   - RPC_PlayDomino
+  - RPC_InitializeGame
+  - RPC_DisableInteractionFor
+  - RPC_EnableInteractionFor
+  - SetPlayerName
+  - RPC_DisablePlayerTurn
+  - RPC_EnablePlayerTurn
+  - RPC_PlaceDomino
+  - RPC_StartMultiplayerGame
+  - RPC_InitializeMultiplayerGame
+  - RPC_PlayerReady
+  - RPC_RegisterPlayer
+  - RPC_SetPlayerHand
+  - RPC_StartAfterDistribution
+  - SetPlayerDisplayName
+  - RPC_NextTurn
+  - RPC_PlayerPassed
+  - RPC_DisplayPlayerTurn
+  - RPC_UpdateUI
+  - RPC_PlayerHandReceived
+  - RPC_SetCurrentPlayerIndex
+  - RPC_ApplyDominoOrder
+  - RPC_DebugLog
+  - RPC_PlayFirstDouble
+  - RPC_PlaceDominoByValues
+  - RPC_PlaceDominoByData
+  - RPC_EventMessage
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

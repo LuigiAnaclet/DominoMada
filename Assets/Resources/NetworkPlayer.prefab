@@ -51,6 +51,7 @@ MonoBehaviour:
   distance: 2
   hasPlayed: 0
   uiManager: {fileID: 4590106090242354545, guid: 1febea1001dba9b4d8e1a38cf80e2896, type: 3}
+  playerDisplayName: 
 --- !u!114 &-4404089814982320629
 MonoBehaviour:
   m_ObjectHideFlags: 0

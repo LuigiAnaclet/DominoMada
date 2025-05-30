@@ -13,7 +13,7 @@ public class UIManager : MonoBehaviour
 
     public void UpdateScoresDisplay(List<IPlayable> players, Dictionary<IPlayable, int> scores, Dictionary<IPlayable, int> cochonsPris, Dictionary<IPlayable, Dictionary<IPlayable, int>> cochonsDonnés)
      {
-         string display = "<b>📊 Scores :</b>\n";
+         string display = "<b> Scores :</b>\n";
          foreach (var player in players)
          {
              int points = scores.ContainsKey(player) ? scores[player] : 0;
@@ -93,7 +93,7 @@ public class UIManager : MonoBehaviour
                 {
                     int count = player.GetHand().Count;
                     string playerName = player.name;
-                    iaDominoCounters[counterIndex].text = $"{playerName} : 🁢 x{count}";
+                    iaDominoCounters[counterIndex].text = $"{playerName} : x{count}";
                 }
                 counterIndex++;
             }

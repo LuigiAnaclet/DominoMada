@@ -1,21 +1,16 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 
 public class ClickableDomino : MonoBehaviour
 {
-    private Player player;
-
-    void Start()
+    private void OnMouseDown()
     {
-        // Trouve le script Player dans la scËne
-        player = FindAnyObjectByType<Player>();
-    }
-
-    void OnMouseDown()
-    {
-       if (player != null)
+        if (GameManager.Instance.localPlayer is Player player)
         {
-            // Passe le domino cliquÈ au script Player pour qu'il soit jouÈ
-            player.OnDominoSelected(this.gameObject);
+            player.OnDominoSelected(gameObject);
+        }
+        else
+        {
+            Debug.LogWarning("‚ùå localPlayer n'est pas de type Player.");
         }
     }
 }

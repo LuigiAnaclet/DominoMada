@@ -8,6 +8,7 @@ public class MainMenuUI : MonoBehaviourPunCallbacks
     private Button createRoomButton;
     private Button joinRoomButton;
     private Button coopVsIAButton;
+    public TMP_InputField nicknameInput;
 
     void Start()
     {
@@ -20,11 +21,13 @@ public class MainMenuUI : MonoBehaviourPunCallbacks
 
         createRoomButton.onClick.AddListener(() => {
             UnityEngine.SceneManagement.SceneManager.LoadScene("CreateRoomScene");
+            SetNickname();
             Debug.Log("Create button clicked");
         });
 
         joinRoomButton.onClick.AddListener(() => {
             UnityEngine.SceneManagement.SceneManager.LoadScene("JoinRoomScene");
+            SetNickname();
             Debug.Log("Join button clicked");
         });
 
@@ -32,5 +35,17 @@ public class MainMenuUI : MonoBehaviourPunCallbacks
             UnityEngine.SceneManagement.SceneManager.LoadScene("CoopVsIA");
             Debug.Log("CoopVsIA button clicked");
         });
+
+        void SetNickname()
+        {
+            string pseudo = nicknameInput.text.Trim();
+            if (string.IsNullOrEmpty(pseudo))
+            {
+                pseudo = "Joueur_" + Random.Range(1000, 9999);
+            }
+            PhotonNetwork.NickName = pseudo;
+            Debug.Log("👤 Pseudo défini : " + pseudo);
+        }
+
     }
 }
