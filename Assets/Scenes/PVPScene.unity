@@ -1275,6 +1275,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameManager: {fileID: 1500169663}
+  uiManager: {fileID: 1485710364}
   playerPrefab: {fileID: 2461313653973143180, guid: 30916a0dfc385964187429462c74f114, type: 3}
 --- !u!114 &1711018106
 MonoBehaviour:

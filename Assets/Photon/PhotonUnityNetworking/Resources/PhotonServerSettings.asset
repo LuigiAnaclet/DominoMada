@@ -66,6 +66,8 @@ MonoBehaviour:
   - RPC_PlaceDominoByValues
   - RPC_PlaceDominoByData
   - RPC_EventMessage
+  - RPC_WinnerMessage
+  - RPC_RestartGameMultiplayer
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

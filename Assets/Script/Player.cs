@@ -196,15 +196,13 @@ public class Player : MonoBehaviourPun, IPlayable
     // Méthode appelée lorsque le joueur clique sur un domino
     public void OnDominoSelected(GameObject dominoObj)
     {
-        gameManager.DebugDominoState();
-        Debug.Log($"[PLAYER] playedDominos.Count = {GameManager.Instance.playedDominos.Count}");
-
+        Debug.Log($"[PLAYER] player = {string.Join(", ", hand)}");
         Domino selectedDomino = dominoObj.GetComponent<Domino>();
         Debug.Log($"Domino cliqué : {dominoObj}");
         if (selectedDomino != null)
         {
             // ✅ Cas spécial : premier tour, aucune contrainte
-            if (GameManager.Instance.playedDominos.Count == 0 && GameManager.Instance.firstDoublePlayed)
+            if (gameManager.playedDominos.Count == 0 && gameManager.firstDoublePlayed)
             {
                 Debug.Log("🟢 Premier tour : le joueur peut jouer n'importe quel domino.");
                 // Sauvegarde l'index du domino sélectionné

@@ -11,6 +11,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     public static MultiplayerManager Instance;
 
     public GameManager gameManager;
+    public UIManager uiManager;
     public GameObject playerPrefab;
 
     private Dictionary<int, Player> photonPlayers = new Dictionary<int, Player>();
@@ -44,7 +45,6 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     }
 
 
-
     IEnumerator WaitAndInstantiatePlayer()
     {
         yield return new WaitForSeconds(0.5f);
@@ -58,6 +58,8 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
 
         GameObject playerObj = PhotonNetwork.Instantiate("NetworkPlayer", Vector3.zero, Quaternion.identity);
         Player playerScript = playerObj.GetComponent<Player>();
+        playerScript.gameManager = gameManager;
+        playerScript.uiManager = uiManager;
         playerScript.name = PhotonNetwork.NickName;
 
         // Marque ce client comme instancié
@@ -179,6 +181,11 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     {
         playersReady++;
         //Debug.Log($"📥 Joueur prêt : {actorNumber} ({playersReady}/{expectedPlayerCount})");
+        foreach (Player player in gameManager.players)
+        {
+            gameManager.RegisterPlayerInDictionaries(player);
+        }
+
 
         if (PhotonNetwork.IsMasterClient && playersReady >= expectedPlayerCount)
         {
@@ -337,6 +344,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
                 player.SetDominosInteractable(true);
                 player.StartTurnTimer(15f);
                 gameManager.uiManager?.DisplayPlayerTurn("C’est mon tour !");
+                //Debug.Log($"🟢 [LOCAL] C’est à moi de jouer ({player.name})");
             }
             else
             {
@@ -386,7 +394,8 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
        // Debug.Log($"[DEBUG MULTI] Domino [{sideA}|{sideB}] : ID={domino.GetInstanceID()}, transform.position = {domino.transform.position}, parent = {(domino.transform.parent != null ? domino.transform.parent.name : "null")}");
         gameManager.PlaceDomino(domino, playRight);
         //Debug.Log($"[RPC_PlaceDominoByData] playedDominos.Count = {gameManager.playedDominos.Count}");
-        //Debug.Log($"✅ Domino [{sideA}|{sideB}] activé et ajouté au plateau !");
+        
+        Debug.Log($"✅ Domino [{sideA}|{sideB}] ajouté au plateau !");
 
 
 
@@ -421,62 +430,20 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void RPC_UpdateUI()
     {
-        if (GameManager.Instance == null || GameManager.Instance.uiManager == null)
+        if (gameManager == null || gameManager.uiManager == null)
         {
             Debug.LogError("GameManager ou uiManager est null dans RPC_UpdateUI !");
             return;
         }
 
-        GameManager.Instance.uiManager.UpdateScoresDisplay(GameManager.Instance.players,
-                                                           GameManager.Instance.playerScores,
-                                                           GameManager.Instance.playerCochons,
-                                                           GameManager.Instance.cochonsDonnés);
+        gameManager.uiManager.UpdateScoresDisplay(GameManager.Instance.players,
+                                                           gameManager.playerScores,
+                                                           gameManager.playerCochons,
+                                                           gameManager.cochonsDonnés);
 
-        GameManager.Instance.uiManager.UpdateIADominoCounts(GameManager.Instance.players,
-                                                            GameManager.Instance.localPlayer);
+        gameManager.uiManager.UpdateIADominoCounts(gameManager.players,
+                                                            gameManager.localPlayer);
     }
-
-
-   /* [PunRPC]
-    public void RPC_EnablePlayerTurn(string playerName)
-    {
-        foreach (var p in gameManager.players)
-        {
-            if (p is Player player && player.name == playerName)
-            {
-                player.SetDominosInteractable(true);
-                player.StartTurnTimer(15f);
-                Debug.Log("🟢 C'est ton tour : " + player.name);
-            }
-        }
-        //photonView.RPC("RPC_DisablePlayerTurn", RpcTarget.All, playerName);
-    }
-
-    /* [PunRPC]
-     void RPC_DisablePlayerTurn(string playerName)
-     {
-         foreach (var p in gameManager.players)
-         {
-             if (p is Player human && p.name == playerName)
-             {
-                 human.SetDominosInteractable(false);
-             }
-         }
-     }*/
-
-    /*[PunRPC]
-    public void RPC_DisplayPlayerTurn(string name)
-    {
-        if (GameManager.Instance != null && GameManager.Instance.uiManager != null)
-        {
-            GameManager.Instance.uiManager.DisplayPlayerTurn($"C'est au tour de {name}");
-        }
-    }
-
-    public void NotifyPlayerTurn(string playerName)
-    {
-        photonView.RPC("RPC_EnablePlayerTurn", RpcTarget.All, playerName);
-    }*/
 
     public void NotifyPlayerPassed(string playerName)
     {
@@ -495,5 +462,35 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
             Debug.LogWarning($"❌ [RPC_EventMessage] UIManager manquant. Message non affiché : {message}");
         }
     }
+
+    [PunRPC]
+    public void RPC_WinnerMessage(string message)
+    {
+        if (gameManager?.uiManager != null)
+        {
+            gameManager.uiManager.ShowWinnerMessage(message);
+        }
+        else
+        {
+            Debug.LogWarning($"❌ [RPC_WinnerMessage] UIManager manquant. Message non affiché : {message}");
+        }
+    }
+
+    public void RequestRestartGame()
+    {
+        photonView.RPC("RPC_RestartGameMultiplayer", RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void RPC_RestartGameMultiplayer()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            gameManager.RestartGame();
+        }
+    }
+
+
+
 
 }

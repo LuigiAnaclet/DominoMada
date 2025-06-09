@@ -87,10 +87,11 @@ public class GameManager : MonoBehaviourPunCallbacks
             uiManager.UpdateScoresDisplay(players, playerScores, playerCochons, cochonsDonnés);
         }
 
+
         if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
         {
-            /*Debug.Log($"Chargement du multi");
-            MultiplayerManager.Instance.RegisterGameManager(this);*/
+            Debug.Log("RestartGame");
+            InitializeGameMultiplayer();
         }
         else
         {
@@ -520,7 +521,12 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (CheckIfGameEnded())
         {
             Debug.Log("La partie est terminée !");
-            RestartGame();
+            if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom && PhotonNetwork.CurrentRoom.PlayerCount > 1)
+            { MultiplayerManager.Instance.RequestRestartGame(); }
+            else
+            {
+                RestartGame();
+            }
             return;
         }
         if (players[currentPlayerIndex] is Player previousPlayer)
@@ -560,6 +566,7 @@ public class GameManager : MonoBehaviourPunCallbacks
                         StartCoroutine(WaitAndRequestDecision(aiAgent));
                     }
                 }
+                passes = 0;
             }
             else
             {
@@ -585,7 +592,6 @@ public class GameManager : MonoBehaviourPunCallbacks
             {
                 MultiplayerManager.Instance.photonView.RPC("RPC_UpdateUI", RpcTarget.All);
             }
-            
         }
     }
 
@@ -655,19 +661,13 @@ public bool IsValidPlay(Domino domino)
             return (domino.sides[0] == leftEndValue || domino.sides[1] == leftEndValue ||
                 domino.sides[0] == rightEndValue || domino.sides[1] == rightEndValue);
     }
-
-    public void DebugDominoState()
-    {
-        Debug.Log($"[DEBUG] playedDominos.Count = {playedDominos.Count}, playedDominosData.Count = {playedDominosData.Count}");
-    }
+    
 
 
     public PlaySide GetValidPlaySides(Domino domino)
     {
         int leftEndValue = GetLeftEndValue();
         int rightEndValue = GetRightEndValue();
-
-        Debug.Log($"[GetValidPlaySides] leftEndValue = {leftEndValue}, rightEndValue = {rightEndValue}");
 
         bool canPlayLeft = domino.sides[0] == leftEndValue || domino.sides[1] == leftEndValue;
         bool canPlayRight = domino.sides[0] == rightEndValue || domino.sides[1] == rightEndValue;
@@ -734,8 +734,6 @@ public bool IsValidPlay(Domino domino)
             // 🎮 Mode solo ou local : continue normalement
             NextTurn();
         }
-
-
     }
 
 
@@ -1060,6 +1058,10 @@ public bool IsValidPlay(Domino domino)
                 {
                     uiManager.ShowWinnerMessage($"Le joueur {player.name} a gagné !");
                 }
+                if (PhotonNetwork.IsConnected && MultiplayerManager.Instance != null)
+                {
+                    MultiplayerManager.Instance.photonView.RPC("RPC_WinnerMessage", RpcTarget.All, $"Le joueur {player.name} a gagné !");
+                }
                 Debug.Log($"Le joueur {player.name} a gagné !");
                 if (player is DQNAgent aiAgent)
                 {
@@ -1142,7 +1144,7 @@ public bool IsValidPlay(Domino domino)
         }
     }
 
-    private void RestartGame()
+    public void RestartGame()
     {
         //Debug.Log("Redémarrage du jeu...");
         Debug.Log($"🔄 [RestartGame] Redémarrage... Nombre de joueurs avant reset : {players.Count}");
@@ -1179,11 +1181,6 @@ public bool IsValidPlay(Domino domino)
         StartCoroutine(StartGame());
     }
 
-    /*private IEnumerator DelayedInitializeGame()
-    {
-        yield return new WaitForSeconds(5f); // 🔥 Petit délai pour afficher qui à gagné
-        StartGame();
-    }*/
 
     // Appelée à la fin de chaque partie pour enregistrer les victoires
     public void OnPlayerWin(IPlayable winner)
