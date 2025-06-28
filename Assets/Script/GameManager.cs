@@ -41,7 +41,8 @@ public class GameManager : MonoBehaviourPunCallbacks
     public Dictionary<IPlayable, int> playerScores = new Dictionary<IPlayable, int>();
     public Dictionary<IPlayable, int> playerCochons = new Dictionary<IPlayable, int>();
     public Dictionary<IPlayable, Dictionary<IPlayable, int>> cochonsDonnés = new Dictionary<IPlayable, Dictionary<IPlayable, int>>();
-    private IPlayable lastWinner = null; // Stocke le dernier gagnant
+    private IPlayable lastWinner = null;
+    private string lastWinnerName = null;    // Stocke le dernier gagnant
     private List<IPlayable> lastBallePlayers = new List<IPlayable>(); // Stocke si il y a eu balle
     private int startingPlayerIndex = -1;
     private const int MaxHorizontalDominosPerSide = 8;
@@ -135,7 +136,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         Player humanPlayer = FindAnyObjectByType<Player>();
         if (humanPlayer != null)
         {
-            humanPlayer.gameManager = this;
+            //humanPlayer.gameManager = this;
             players.Add(humanPlayer);
             RegisterPlayerInDictionaries(humanPlayer);
         }
@@ -318,20 +319,25 @@ public class GameManager : MonoBehaviourPunCallbacks
             IPlayable currentPlayer = players[currentPlayerIndex];
             // Appel du RPC via MultiplayerManager
             //Debug.Log($"[ContinueAfterDistributionMultiplayer] Setting index");
-            
 
 
-            if (lastWinner != null && players.Contains(lastWinner))
+
+            if (!string.IsNullOrEmpty(lastWinnerName))
             {
-                currentPlayerIndex = startingPlayerIndex;
-                MultiplayerManager.Instance.photonView.RPC("RPC_SetCurrentPlayerIndex", RpcTarget.All, currentPlayerIndex);
-                Debug.Log("🎯 [MasterClient] Tour libre pour le dernier gagnant.");
-                if (currentPlayer is Player player && player.photonView.IsMine)
+                var found = players.FirstOrDefault(p => p.name == lastWinnerName);
+                if (found != null)
                 {
-                    player.SetDominosInteractable(true);
-                    player.StartTurnTimer(15f);
+                    currentPlayerIndex = players.IndexOf(found);
+                    MultiplayerManager.Instance.photonView.RPC("RPC_SetCurrentPlayerIndex", RpcTarget.All, currentPlayerIndex);
+                    Debug.Log("🎯 [MasterClient] Tour libre pour le dernier gagnant.");
+
+                    if (found is Player player && player.photonView.IsMine)
+                    {
+                        player.SetDominosInteractable(true);
+                        player.StartTurnTimer(15f);
+                    }
+                    return;
                 }
-                return;
             }
             // ✅ Synchroniser le premier joueur (celui qui joue après le double)
             //currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
@@ -1181,6 +1187,19 @@ public bool IsValidPlay(Domino domino)
         StartCoroutine(StartGame());
     }
 
+    public void ResetDominos()
+    {
+        foreach (var domino in dominoObjects)
+        {
+            if (domino != null)
+            {
+                domino.ResetDomino();
+            }
+        }
+
+        playedDominos.Clear();
+        playedDominosData.Clear();
+    }
 
     // Appelée à la fin de chaque partie pour enregistrer les victoires
     public void OnPlayerWin(IPlayable winner)
@@ -1197,6 +1216,7 @@ public bool IsValidPlay(Domino domino)
             if (playerScores[player] == 0)
             {
                 allPlayersHavePoints = false;
+                lastWinnerName = winner.name;
                 lastWinner = winner;  // Peu importe IA ou Humain
                 Debug.Log($"✅ lastWinner est maintenant {winner.name}");
                 if (player is DQNAgent aiAgent)

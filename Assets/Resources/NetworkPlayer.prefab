@@ -45,7 +45,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 345fe17b7afeb204693c7d08aa12be43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameManager: {fileID: 7861747601242475470, guid: f66edc9c191c91346b2772d1a2d0e9aa, type: 3}
   hand: []
   targetCamera: {fileID: 2229856559180294193, guid: 75b98bf1146447640aa853f192747151, type: 3}
   distance: 2

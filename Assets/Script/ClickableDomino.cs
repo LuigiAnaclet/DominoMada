@@ -6,6 +6,12 @@ public class ClickableDomino : MonoBehaviour
     {
         if (GameManager.Instance.localPlayer is Player player)
         {
+            if (this == null || gameObject == null)
+            {
+                Debug.LogWarning("❌ ClickableDomino cliqué mais GameObject manquant.");
+                return;
+            }
+
             player.OnDominoSelected(gameObject);
         }
         else

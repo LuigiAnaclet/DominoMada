@@ -9,7 +9,7 @@ using static GameManager;
 public class Player : MonoBehaviourPun, IPlayable
 {
     public string name { get; set; } = "";
-    public GameManager gameManager;
+    //public GameManager gameManager;
     public List<Domino> hand = new List<Domino>();
     public bool isAI { get; set; } = false;
     public Camera targetCamera; // La caméra de référence
@@ -78,7 +78,7 @@ public class Player : MonoBehaviourPun, IPlayable
             List<Domino> validDominos = new List<Domino>();
             foreach (var d in hand)
             {
-                if (gameManager.GetValidPlaySides(d) != GameManager.PlaySide.None)
+                if (GameManager.Instance.GetValidPlaySides(d) != GameManager.PlaySide.None)
                     validDominos.Add(d);
             }
 
@@ -86,15 +86,15 @@ public class Player : MonoBehaviourPun, IPlayable
             {
                 Domino randomDomino = validDominos[Random.Range(0, validDominos.Count)];
                 int index = hand.IndexOf(randomDomino);
-                GameManager.PlaySide side = gameManager.GetValidPlaySides(randomDomino);
+                GameManager.PlaySide side = GameManager.Instance.GetValidPlaySides(randomDomino);
 
                 if (side == GameManager.PlaySide.Both)
                 {
-                    gameManager.PlayDomino(index, this, Random.value > 0.5f);
+                    GameManager.Instance.PlayDomino(index, this, Random.value > 0.5f);
                 }
                 else
                 {
-                    gameManager.PlayDomino(index, this, side == GameManager.PlaySide.Right);
+                    GameManager.Instance.PlayDomino(index, this, side == GameManager.PlaySide.Right);
                 }
             }
             else
@@ -105,7 +105,7 @@ public class Player : MonoBehaviourPun, IPlayable
                 }
                 else
                 {
-                    gameManager.NextTurn();
+                    GameManager.Instance.NextTurn();
                 }
 
             }
@@ -196,24 +196,36 @@ public class Player : MonoBehaviourPun, IPlayable
     // Méthode appelée lorsque le joueur clique sur un domino
     public void OnDominoSelected(GameObject dominoObj)
     {
-        Debug.Log($"[PLAYER] player = {string.Join(", ", hand)}");
+        if (dominoObj == null)
+        {
+            Debug.LogWarning("❌ dominoObj est null.");
+            return;
+        }
+
         Domino selectedDomino = dominoObj.GetComponent<Domino>();
+        if (selectedDomino == null)
+        {
+            Debug.LogWarning($"❌ Aucun composant Domino trouvé sur {dominoObj.name}");
+            return;
+        }
+        Debug.Log($"[PLAYER] player = {string.Join(", ", hand)}");
+        //Domino selectedDomino = dominoObj.GetComponent<Domino>();
         Debug.Log($"Domino cliqué : {dominoObj}");
         if (selectedDomino != null)
         {
             // ✅ Cas spécial : premier tour, aucune contrainte
-            if (gameManager.playedDominos.Count == 0 && gameManager.firstDoublePlayed)
+            if (GameManager.Instance.playedDominos.Count == 0 && GameManager.Instance.firstDoublePlayed)
             {
                 Debug.Log("🟢 Premier tour : le joueur peut jouer n'importe quel domino.");
                 // Sauvegarde l'index du domino sélectionné
-                gameManager.selectedDominoIndex = hand.IndexOf(selectedDomino);
+                GameManager.Instance.selectedDominoIndex = hand.IndexOf(selectedDomino);
                 // Au premier coup playRight doit toujours être égal à true
-                gameManager.PlayDomino(hand.IndexOf(selectedDomino), this, true);
+                GameManager.Instance.PlayDomino(hand.IndexOf(selectedDomino), this, true);
                 //gameManager.ShowClickZones(true);
                 return;
             }
 
-            var validPlaySide = gameManager.GetValidPlaySides(selectedDomino);
+            var validPlaySide = GameManager.Instance.GetValidPlaySides(selectedDomino);
 
             if (validPlaySide == GameManager.PlaySide.Both)
             {
@@ -222,18 +234,18 @@ public class Player : MonoBehaviourPun, IPlayable
 
                 //Debug.Log("Le joueur peut jouer à gauche ou à droite. En attente du choix du joueur...");
                 uiManager.EventMessage("Choisissez de jouer à droite ou à gauche...");
-                gameManager.ShowClickZones(true);
-                gameManager.PositionClickZonesAtEnds();
+                GameManager.Instance.ShowClickZones(true);
+                GameManager.Instance.PositionClickZonesAtEnds();
 
-                gameManager.selectedDominoIndex = hand.IndexOf(selectedDomino);
+                GameManager.Instance.selectedDominoIndex = hand.IndexOf(selectedDomino);
             }
             else if (validPlaySide == GameManager.PlaySide.Left)
             {
-                gameManager.PlayDomino(hand.IndexOf(selectedDomino), this, false);
+                GameManager.Instance.PlayDomino(hand.IndexOf(selectedDomino), this, false);
             }
             else if (validPlaySide == GameManager.PlaySide.Right)
             {
-                gameManager.PlayDomino(hand.IndexOf(selectedDomino), this, true);
+                GameManager.Instance.PlayDomino(hand.IndexOf(selectedDomino), this, true);
             }
             else
             {

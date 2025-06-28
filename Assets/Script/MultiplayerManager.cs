@@ -58,7 +58,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
 
         GameObject playerObj = PhotonNetwork.Instantiate("NetworkPlayer", Vector3.zero, Quaternion.identity);
         Player playerScript = playerObj.GetComponent<Player>();
-        playerScript.gameManager = gameManager;
+        //playerScript.gameManager = gameManager;
         playerScript.uiManager = uiManager;
         playerScript.name = PhotonNetwork.NickName;
 
@@ -280,6 +280,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
                 return;
             }
         }
+        photonView.RPC("RPC_UpdateUI", RpcTarget.All);
         Debug.LogWarning("⚠ Aucun joueur correspondant trouvé pour RPC_SetPlayerHand !");
     }
 
@@ -484,9 +485,10 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void RPC_RestartGameMultiplayer()
     {
+        gameManager.ResetDominos(); // ✅ Réinitialise sur TOUS les clients AVANT de redistribuer
         if (PhotonNetwork.IsMasterClient)
         {
-            gameManager.RestartGame();
+            gameManager.RestartGame(); // Distribue les mains ensuite
         }
     }
 
