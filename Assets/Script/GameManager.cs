@@ -215,6 +215,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         Debug.Log("[InitializeGameMultiplayer] Nouvelle partie en cours...");
         /*DisplayScoresAndCochons();
         DisplayCochonsHistory(); */
+        MultiplayerManager.Instance.photonView.RPC("RPC_SyncAllStats", RpcTarget.All, SerializeStats());
         if (PhotonNetwork.IsConnected && MultiplayerManager.Instance != null)
         {
             MultiplayerManager.Instance.photonView.RPC("RPC_UpdateUI", RpcTarget.All);
@@ -1274,7 +1275,6 @@ public bool IsValidPlay(Domino domino)
                         }
                         cochonsDonnés[winner][player]++;
                     }
-                    lastWinner = null;
                 }
 
                 Debug.Log("[OnPlayerWin] Remise des scores à zéro après attribution des cochons.");
@@ -1282,7 +1282,8 @@ public bool IsValidPlay(Domino domino)
                 {
                     playerScores[player] = 0;
                 }
-
+                MultiplayerManager.Instance.photonView.RPC("RPC_SyncAllStats", RpcTarget.All, SerializeStats());
+                lastWinner = null;
                 //RestartGame();
             }
         }
