@@ -41,10 +41,10 @@ public class GameManager : MonoBehaviourPunCallbacks
     public Dictionary<IPlayable, int> playerScores = new Dictionary<IPlayable, int>();
     public Dictionary<IPlayable, int> playerCochons = new Dictionary<IPlayable, int>();
     public Dictionary<IPlayable, Dictionary<IPlayable, int>> cochonsDonnés = new Dictionary<IPlayable, Dictionary<IPlayable, int>>();
-    private IPlayable lastWinner = null;
+    public IPlayable lastWinner = null;
     private string lastWinnerName = null;    // Stocke le dernier gagnant
     private List<IPlayable> lastBallePlayers = new List<IPlayable>(); // Stocke si il y a eu balle
-    private int startingPlayerIndex = -1;
+    public int startingPlayerIndex = -1;
     private const int MaxHorizontalDominosPerSide = 8;
     private int leftDominoCount = 0;
     private int rightDominoCount = 0;
@@ -91,7 +91,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
         {
-            Debug.Log("RestartGame");
+            //Debug.Log("RestartGame");
             InitializeGameMultiplayer();
         }
         else
@@ -213,13 +213,14 @@ public class GameManager : MonoBehaviourPunCallbacks
         rightDominoCount = 0;
 
         Debug.Log("[InitializeGameMultiplayer] Nouvelle partie en cours...");
-        DisplayScoresAndCochons();
-        DisplayCochonsHistory(); 
-        StartCoroutine(DelayedMultiplayerDistribution());
-        if (uiManager != null)
+        /*DisplayScoresAndCochons();
+        DisplayCochonsHistory(); */
+        if (PhotonNetwork.IsConnected && MultiplayerManager.Instance != null)
         {
             MultiplayerManager.Instance.photonView.RPC("RPC_UpdateUI", RpcTarget.All);
         }
+        StartCoroutine(DelayedMultiplayerDistribution());
+        
 
         /*if(PhotonNetwork.IsMasterClient && playedDominos.Count == 0)
         {
@@ -316,28 +317,19 @@ public class GameManager : MonoBehaviourPunCallbacks
             Debug.Log("[MasterClient] Initialisation du tour...");
 
             GetStartingPlayerIndex();
+            currentPlayerIndex = startingPlayerIndex;
             IPlayable currentPlayer = players[currentPlayerIndex];
             // Appel du RPC via MultiplayerManager
             //Debug.Log($"[ContinueAfterDistributionMultiplayer] Setting index");
 
+            // (currentPlayerIndex - 1 + players.Count) % players.Count;
 
 
-            if (!string.IsNullOrEmpty(lastWinnerName))
+            if (lastWinner != null && players.Contains(lastWinner))
             {
-                var found = players.FirstOrDefault(p => p.name == lastWinnerName);
-                if (found != null)
-                {
-                    currentPlayerIndex = players.IndexOf(found);
-                    MultiplayerManager.Instance.photonView.RPC("RPC_SetCurrentPlayerIndex", RpcTarget.All, currentPlayerIndex);
-                    Debug.Log("🎯 [MasterClient] Tour libre pour le dernier gagnant.");
-
-                    if (found is Player player && player.photonView.IsMine)
-                    {
-                        player.SetDominosInteractable(true);
-                        player.StartTurnTimer(15f);
-                    }
-                    return;
-                }
+                //startingPlayerIndex = (currentPlayerIndex - 1 + players.Count) % players.Count;
+                MultiplayerManager.Instance.photonView.RPC("RPC_SetCurrentPlayerIndex", RpcTarget.All, startingPlayerIndex);
+                return;
             }
             // ✅ Synchroniser le premier joueur (celui qui joue après le double)
             //currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
@@ -412,6 +404,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void GetStartingPlayerIndex()
     {
+        Debug.Log("📍 GetStartingPlayerIndex() exécuté !");
         if (players.Count == 0)
         {
             Debug.LogError("❌ [GetStartingPlayerIndex] Aucun joueur trouvé !");
@@ -470,7 +463,8 @@ public class GameManager : MonoBehaviourPunCallbacks
                 uiManager.EventMessage($"{startingPlayer.name} commence avec [{highestDouble.sides[0]}|{highestDouble.sides[1]}] !");
             }
 
-            
+            startingPlayer.RemoveDominoFromHand(highestDouble);
+
 
             // ✅ Ne PAS jouer localement, simplement envoyer le RPC à TOUS
             if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom && PhotonNetwork.CurrentRoom.PlayerCount > 1)
@@ -484,7 +478,7 @@ public class GameManager : MonoBehaviourPunCallbacks
             else
             {
                 // Mode solo uniquement ➔ on applique localement
-                startingPlayer.RemoveDominoFromHand(highestDouble);
+                
                 SyncAgentHand(startingPlayer);
                 highestDouble.gameObject.SetActive(true);
                 highestDouble.transform.SetParent(null);
@@ -493,7 +487,6 @@ public class GameManager : MonoBehaviourPunCallbacks
             }
             firstDoublePlayed = true;
 
-            currentPlayerIndex = startingPlayerIndex;
             return;
         }
 
@@ -528,7 +521,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             Debug.Log("La partie est terminée !");
             if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom && PhotonNetwork.CurrentRoom.PlayerCount > 1)
-            { MultiplayerManager.Instance.RequestRestartGame(); }
+            { 
+                MultiplayerManager.Instance.RequestRestartGame(); }
             else
             {
                 RestartGame();
@@ -1178,6 +1172,8 @@ public bool IsValidPlay(Domino domino)
         currentPlayerIndex = 0;
         passes = 0;
 
+        
+
         // Masquer les zones cliquables
         HideClickZones();
 
@@ -1196,7 +1192,8 @@ public bool IsValidPlay(Domino domino)
                 domino.ResetDomino();
             }
         }
-
+        leftDominoCount = 0;
+        rightDominoCount = 0;
         playedDominos.Clear();
         playedDominosData.Clear();
     }
@@ -1206,10 +1203,12 @@ public bool IsValidPlay(Domino domino)
     {
 
         playerScores[winner]++;
+        // Envoie tous les scores et cochons aux autres clients
+        MultiplayerManager.Instance.photonView.RPC("RPC_SyncAllStats", RpcTarget.All, SerializeStats());
         Debug.Log($"[OnPlayerWin] {winner.name} a gagné une partie.");
 
         // Vérifie si tous les joueurs ont au moins 1 point → Partie chiré
-        bool allPlayersHavePoints = true;
+        bool allPlayersHavePoints = false;
         foreach (var player in players)
         {
             Debug.Log($"[OnPlayerWin] {player.name} à : {playerScores[player]} points");
@@ -1224,6 +1223,10 @@ public bool IsValidPlay(Domino domino)
                     aiAgent.AddReward(-5.0f);
                 }
                 break;
+            }
+            if (PhotonNetwork.IsConnected && MultiplayerManager.Instance != null)
+            {
+                MultiplayerManager.Instance.photonView.RPC("RPC_UpdateUI", RpcTarget.All);
             }
         }
 
@@ -1284,6 +1287,7 @@ public bool IsValidPlay(Domino domino)
             }
         }
         //RestartGame();
+
     }
 
     public void DisplayScoresAndCochons()
@@ -1319,6 +1323,36 @@ public bool IsValidPlay(Domino domino)
                 Debug.Log($"{receveur.Key.name} a pris {receveur.Value} cochons de {donneur.Key.name}");
             }
         }
+    }
+    //Permets de sync les stats pour tous les clients
+    public object[] SerializeStats()
+    {
+        List<object> data = new List<object>();
+
+        foreach (var player in players)
+        {
+            int score = playerScores.ContainsKey(player) ? playerScores[player] : 0;
+            int cochons = playerCochons.ContainsKey(player) ? playerCochons[player] : 0;
+            data.Add(score);
+            data.Add(cochons);
+
+            // Sérialisation du dictionnaire interne de cochons donnés
+            if (cochonsDonnés.TryGetValue(player, out var innerDict))
+            {
+                data.Add(innerDict.Count);
+                foreach (var kvp in innerDict)
+                {
+                    data.Add(kvp.Key.name);
+                    data.Add(kvp.Value);
+                }
+            }
+            else
+            {
+                data.Add(0); // Aucun cochon donné
+            }
+        }
+
+        return data.ToArray();
     }
 
 }

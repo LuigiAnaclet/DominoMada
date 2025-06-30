@@ -214,7 +214,7 @@ public class Player : MonoBehaviourPun, IPlayable
         if (selectedDomino != null)
         {
             // ✅ Cas spécial : premier tour, aucune contrainte
-            if (GameManager.Instance.playedDominos.Count == 0 && GameManager.Instance.firstDoublePlayed)
+            if (GameManager.Instance.playedDominos.Count == 0 && !GameManager.Instance.firstDoublePlayed)
             {
                 Debug.Log("🟢 Premier tour : le joueur peut jouer n'importe quel domino.");
                 // Sauvegarde l'index du domino sélectionné

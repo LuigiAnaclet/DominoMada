@@ -68,6 +68,9 @@ MonoBehaviour:
   - RPC_EventMessage
   - RPC_WinnerMessage
   - RPC_RestartGameMultiplayer
+  - RPC_SetLastWinner
+  - RPC_SetStartingPlayerIndex
+  - RPC_SyncAllStats
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

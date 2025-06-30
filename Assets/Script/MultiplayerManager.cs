@@ -107,6 +107,12 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
             return int.MaxValue;
         }).ToList();
 
+    foreach (var p in gameManager.players)
+    {
+        gameManager.RegisterPlayerInDictionaries(p);
+    }
+
+
     Debug.Log($"✅ Player enregistré : {playerScript.name} / ActorNumber = {view?.OwnerActorNr}");
 }
 
@@ -208,6 +214,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
 
         if (gameManager != null && gameManager.players.Count == expectedPlayerCount)
         {
+            Debug.Log("✅ Tous les joueurs sont prêts. Initialisation du jeu multijoueur.");
             gameManager.InitializeGameMultiplayer();
         }
         else
@@ -245,6 +252,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void RPC_SetPlayerHand(int[] indices, int actorNumber)
     {
+        photonView.RPC("RPC_UpdateUI", RpcTarget.All);
         if (gameManager == null || gameManager.players == null)
         {
             Debug.LogError("❌ gameManager ou ses joueurs sont null !");
@@ -270,23 +278,24 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
                 if (player.photonView.IsMine)
                 {
                     player.DisplayPlayerHand(); // ✅ Le joueur local affiche sa main
+                    
                 }
 
-
-                Debug.Log($"🃏 {player.name} (Owner: {player.photonView.Owner.NickName}, ActorNumber: {player.photonView.Owner.ActorNumber}) a reçu {hand.Count} dominos : {handLog.TrimEnd(',', ' ')}");
-                // Debug.Log($"ℹ️ info.Sender.ActorNumber = {actorNumber}, info.Sender.NickName = {actorNumber.NickName}");
-
                 PhotonView.Get(this).RPC("RPC_PlayerHandReceived", RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber);
+                Debug.Log($"🃏 {player.name} (Owner: {player.photonView.Owner.NickName}, ActorNumber: {player.photonView.Owner.ActorNumber}) a reçu {hand.Count} dominos : {handLog.TrimEnd(',', ' ')}");
+                //photonView.RPC("RPC_UpdateUI", RpcTarget.All);
+                // Debug.Log($"ℹ️ info.Sender.ActorNumber = {actorNumber}, info.Sender.NickName = {actorNumber.NickName}");
                 return;
             }
         }
-        photonView.RPC("RPC_UpdateUI", RpcTarget.All);
+        
         Debug.LogWarning("⚠ Aucun joueur correspondant trouvé pour RPC_SetPlayerHand !");
     }
 
     [PunRPC]
     public void RPC_PlayerHandReceived(int actorNumber)
     {
+        //Debug.Log("RPC_PlayerHandReceived appelé");
         if (!PhotonNetwork.IsMasterClient) return;
 
         if (!confirmedPlayers.Contains(actorNumber))
@@ -313,7 +322,6 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         Debug.Log("🔁 [RPC_StartAfterDistribution] Initialisation du tour...");
         gameManager.ContinueAfterDistributionMultiplayer();
     }
-
 
     [PunRPC]
     public void RPC_SetCurrentPlayerIndex(int index)
@@ -396,7 +404,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         gameManager.PlaceDomino(domino, playRight);
         //Debug.Log($"[RPC_PlaceDominoByData] playedDominos.Count = {gameManager.playedDominos.Count}");
         
-        Debug.Log($"✅ Domino [{sideA}|{sideB}] ajouté au plateau !");
+        //Debug.Log($"✅ Domino [{sideA}|{sideB}] ajouté au plateau !");
 
 
 
@@ -437,12 +445,12 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
             return;
         }
 
-        gameManager.uiManager.UpdateScoresDisplay(GameManager.Instance.players,
+        uiManager.UpdateScoresDisplay(gameManager.players,
                                                            gameManager.playerScores,
                                                            gameManager.playerCochons,
                                                            gameManager.cochonsDonnés);
 
-        gameManager.uiManager.UpdateIADominoCounts(gameManager.players,
+        uiManager.UpdateIADominoCounts(gameManager.players,
                                                             gameManager.localPlayer);
     }
 
@@ -485,12 +493,54 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void RPC_RestartGameMultiplayer()
     {
+        gameStarted = false;
+        confirmedPlayers.Clear();
         gameManager.ResetDominos(); // ✅ Réinitialise sur TOUS les clients AVANT de redistribuer
         if (PhotonNetwork.IsMasterClient)
         {
             gameManager.RestartGame(); // Distribue les mains ensuite
         }
     }
+
+    [PunRPC]
+    public void RPC_SyncAllStats(object[] data)
+    {
+        int index = 0;
+        var newScores = new Dictionary<IPlayable, int>();
+        var newCochons = new Dictionary<IPlayable, int>();
+        var newCochonsDonnés = new Dictionary<IPlayable, Dictionary<IPlayable, int>>();
+
+        foreach (var player in gameManager.players)
+        {
+            int score = (int)data[index++];
+            int cochons = (int)data[index++];
+            int innerCount = (int)data[index++];
+
+            newScores[player] = score;
+            newCochons[player] = cochons;
+
+            var innerDict = new Dictionary<IPlayable, int>();
+            for (int j = 0; j < innerCount; j++)
+            {
+                string keyName = (string)data[index++];
+                int value = (int)data[index++];
+
+                var target = gameManager.players.FirstOrDefault(p => p.name == keyName);
+                if (target != null)
+                {
+                    innerDict[target] = value;
+                }
+            }
+            newCochonsDonnés[player] = innerDict;
+        }
+
+        gameManager.playerScores = newScores;
+        gameManager.playerCochons = newCochons;
+        gameManager.cochonsDonnés = newCochonsDonnés;
+
+        uiManager?.UpdateScoresDisplay(gameManager.players, gameManager.playerScores, gameManager.playerCochons, gameManager.cochonsDonnés);
+    }
+
 
 
 
