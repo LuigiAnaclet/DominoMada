@@ -82,7 +82,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     IEnumerator StartGame()
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(3f);
         if (uiManager != null)
         {
             uiManager.UpdateScoresDisplay(players, playerScores, playerCochons, cochonsDonnés);
@@ -1112,6 +1112,10 @@ public bool IsValidPlay(Domino domino)
             {
                 uiManager.ShowWinnerMessage($"Égalité ! Aucun gagnant, balle entre {string.Join(", ", potentialWinners.Select(p => p.name))}");
             }
+            if (PhotonNetwork.IsConnected && MultiplayerManager.Instance != null)
+            {
+                MultiplayerManager.Instance.photonView.RPC("RPC_WinnerMessage", RpcTarget.All, $"Égalité ! Aucun gagnant, balle entre {string.Join(", ", potentialWinners.Select(p => p.name))}");
+            }
             Debug.Log($"⚠ Égalité ! Aucun gagnant, balle entre {string.Join(", ", potentialWinners.Select(p => p.name))}");
 
             // 🔥 Stocke les joueurs en balle pour la prochaine partie
@@ -1127,6 +1131,11 @@ public bool IsValidPlay(Domino domino)
         {
             uiManager.ShowWinnerMessage($"Le gagnant est {winner.name} avec {minScore} points !");
         }
+        if (PhotonNetwork.IsConnected && MultiplayerManager.Instance != null)
+        {
+            MultiplayerManager.Instance.photonView.RPC("RPC_WinnerMessage", RpcTarget.All, $"Le gagnant est {winner.name} avec {minScore} points !");
+        }
+
         Debug.Log($"🏆 Le gagnant est {winner.name} avec {minScore} points !");
         OnPlayerWin(winner);
 
@@ -1238,6 +1247,7 @@ public bool IsValidPlay(Domino domino)
             {
                 playerScores[player] = 0;
             }
+            MultiplayerManager.Instance.photonView.RPC("RPC_SyncAllStats", RpcTarget.All, SerializeStats());
             lastWinner = null;
             
         }
@@ -1246,6 +1256,8 @@ public bool IsValidPlay(Domino domino)
             // Si un joueur atteint 3 points et que la partie n'est pas chiré
             if (playerScores[winner] == 3)
             {
+                List<string> cochonsReçus = new List<string>();
+
                 foreach (var player in players)
                 {
                     if (player is DQNAgent aiAgent)
@@ -1259,6 +1271,7 @@ public bool IsValidPlay(Domino domino)
                     }
                     if (player != winner && playerScores[player] == 0)
                     {
+                        
                         playerCochons[player]++;
                         Debug.Log($"[OnPlayerWin] {player.name} a pris un cochon de {winner.name} ! Total cochons : {playerCochons[player]}");
 
@@ -1274,9 +1287,14 @@ public bool IsValidPlay(Domino domino)
                             cochonsDonnés[winner][player] = 0;
                         }
                         cochonsDonnés[winner][player]++;
+                        cochonsReçus.Add(player.name);
                     }
                 }
-
+                if (PhotonNetwork.IsConnected && MultiplayerManager.Instance != null)
+                {
+                    string cochonsList = string.Join(", ", cochonsReçus);
+                    MultiplayerManager.Instance.photonView.RPC("RPC_WinnerMessage", RpcTarget.All, $"{winner.name} a gagné la partie et a donné un cochon à {cochonsList}.");
+                }
                 Debug.Log("[OnPlayerWin] Remise des scores à zéro après attribution des cochons.");
                 foreach (var player in players)
                 {
