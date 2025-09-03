@@ -24,3 +24,8 @@ Projet personnel en cours : un jeu de dominos en ligne avec IA intégrée, déve
 ## 📸 Capture
 
 
+## Démo jouable en ligne
+
+https://tilul97.itch.io/domino-mada
+
+
